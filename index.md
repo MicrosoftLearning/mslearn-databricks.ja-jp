@@ -8,8 +8,8 @@ layout: home
 
 これらの演習は、Microsoft Learn の次のトレーニング コンテンツをサポートするように設計されています。
 
-- [Azure Databricks を使用した Data Engineering](https://learn.microsoft.com/training/paths/data-engineer-azure-databricks/)
-- [Azure Databricks を使用した機械学習](https://learn.microsoft.com/training/paths/build-operate-machine-learning-solutions-azure-databricks/)
+- [Azure Databricks を使用してデータ分析ソリューションを実装する](https://learn.microsoft.com/training/paths/data-engineer-azure-databricks/)
+- [Azure Databricks を使用して Machine Learning ソリューションを実装する](https://learn.microsoft.com/training/paths/build-operate-machine-learning-solutions-azure-databricks/)
 
 これらの演習を完了するには、管理者アクセス権が与えられている Azure サブスクリプションが必要です。
 

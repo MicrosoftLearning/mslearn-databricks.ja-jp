@@ -107,7 +107,7 @@ Azure Data Factory パイプラインから Azure Databricks を使用するに�
 
 ### Azure Data Factory でリンク サービスを作成する
 
-1. Azure portal に戻り、**dp203-*xxxxxxx*** リソース グループで、Azure Data Factory リソース **adf*xxxxxxx*** を選択します。
+1. Azure portal に戻り、**msl-*xxxxxxx*** リソース グループで、Azure Data Factory リソース **adf*xxxxxxx*** を選択します。
 2. **[概要]** ページで、 **[スタジオの起動]** を選択して Azure Data Factory Studio を開きます。 メッセージが表示されたらサインインします。
 3. Azure Data Factory Studio で、 **[>>]** アイコンを使用して左側のナビゲーション ウィンドウを展開します。 次に、 **[管理]** ページを選択します。
 4. **[管理]** ページの **[リンク サービス]** タブで、 **[+ 新規]** を選択して、新しいリンク サービスを追加します。
@@ -158,6 +158,7 @@ Azure Data Factory パイプラインから Azure Databricks を使用するに�
     > **注**: パイプラインが失敗した場合、Azure Databricks ワークスペースがプロビジョニングされているリージョンで、ジョブ クラスターを作成するためのサブスクリプションのクォータが不足していることがあります。 詳細については、「[CPU コアの制限によってクラスターを作成できない](https://docs.microsoft.com/azure/databricks/kb/clusters/azure-core-limit)」を参照してください。 その場合は、ワークスペースを削除し、別のリージョンに新しいワークスペースを作成してみてください。 次のように、セットアップ スクリプトのパラメーターとしてリージョンを指定できます: `./setup.ps1 eastus`
 
 4. 実行が成功したら、その名前を選択して実行の詳細を表示します。 次に、 **[Process Data with Databricks]** ページの **[アクティビティの実行]** セクションで、**Process Data** アクティビティを選択し、その [出力] アイコンを使用してアクティビティからの出力 JSON を表示します。これは次のようになります。******
+
     ```json
     {
         "runPageUrl": "https://adb-..../run/...",
