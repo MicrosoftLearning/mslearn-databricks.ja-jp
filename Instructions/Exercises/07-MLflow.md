@@ -87,7 +87,7 @@ Spark MLLib ライブラリを使って機械学習モデルをトレーニン�
 
 > **[引用]**: この演習で使用するペンギンのデータセットは、[Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) と、[Long Term Ecological Research Network](https://lternet.edu/) のメンバーである [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) によって収集されて使用できるようにされているデータのサブセットです。
 
-1. ノートブックの最初のセルに次のコードを入力します。このコードは、"シェル" コマンドを使って、GitHub からクラスターで使われる Databricks ファイル システム (DBFS) にペンギン データをダウンロードします。**
+1. ノートブックの最初のセルに次のコードを入力します。このコードは、"シェル" コマンドを使用して、GitHub からクラスターで使用されるファイル システムにペンギン データをダウンロードします。**
 
     ```bash
     %sh
@@ -96,7 +96,7 @@ Spark MLLib ライブラリを使って機械学習モデルをトレーニン�
     wget -O /dbfs/mlflow_lab/penguins.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/penguins.csv
     ```
 
-1. 次のセルの右上にある **[&#9656; セルの実行]** メニュー オプションを使って実行します。 その後、コードによって実行される Spark ジョブが完了するまで待ちます。
+1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 その後、コードによって実行される Spark ジョブが完了するまで待ちます。
 
 1. 次に、機械学習用のデータを準備します。 既存のコード セルの下で、 **[+]** アイコンを使用して新しいコード セルを追加します。 次に、新しいセルに次のコードを入力して実行します。
     - 不完全な行を削除します
