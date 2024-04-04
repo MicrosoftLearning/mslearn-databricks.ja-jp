@@ -17,7 +17,7 @@ lab:
 
 > **注**:この演習では、"モデル提供" をサポートするリージョンに **Premium** Azure Databricks ワークスペースが必要です。** リージョンの Azure Databricks 機能の詳細については、「[Azure Databricks のリージョン](https://learn.microsoft.com/azure/databricks/resources/supported-regions)」を参照してください。 適切なリージョンに *Premium* または "試用版" の Azure Databricks ワークスペースが既にある場合は、この手順をスキップして、既存のワークスペースを使用できます。**
 
-この演習には、新しい Azure Databricks ワークスペースをプロビジョニングするスクリプトが含まれています。 このスクリプトは、この演習で必要なコンピューティング コアに対する十分なクォータが Azure サブスクリプションにあるリージョンに、*Premium* レベルの Azure Databricks ワークスペース リソースを作成しようとします。また、使用するユーザー アカウントのサブスクリプションに、Azure Databricks ワークスペース リソースを作成するための十分なアクセス許可があることを前提としています。 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、Azure portal で、Azure Databricks ワークスペースを対話形式で作成してみてください。
+この演習には、新しい Azure Databricks ワークスペースをプロビジョニングするスクリプトが含まれています。 このスクリプトは、この演習で必要なコンピューティング コアに対する十分なクォータが Azure サブスクリプションにあるリージョンに、*Premium* レベルの Azure Databricks ワークスペース リソースを作成しようとします。また、使用するユーザー アカウントのサブスクリプションに、Azure Databricks ワークスペース リソースを作成するための十分なアクセス許可があることを前提としています。 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、[Azure portal で、Azure Databricks ワークスペースを対話形式で作成](https://learn.microsoft.com/azure/databricks/getting-started/#--create-an-azure-databricks-workspace)してみてください。
 
 1. Web ブラウザーで、`https://portal.azure.com` の [Azure portal](https://portal.azure.com) にサインインします。
 2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。メッセージが表示されたら、***PowerShell*** 環境を選んで、ストレージを作成します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
@@ -87,7 +87,7 @@ Spark MLLib ライブラリを使って機械学習モデルをトレーニン�
 
 > **[引用]**: この演習で使用するペンギンのデータセットは、[Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) と、[Long Term Ecological Research Network](https://lternet.edu/) のメンバーである [Palmer Station, Antarctica LTER](https://pal.lternet.edu/) によって収集されて使用できるようにされているデータのサブセットです。
 
-1. ノートブックの最初のセルに次のコードを入力します。このコードは、"シェル" コマンドを使用して、GitHub からクラスターで使用されるファイル システムにペンギン データをダウンロードします。**
+1. ノートブックの最初のセル内に次のコードを入力します。これは "シェル" コマンドを使用して、GitHub のペンギン データをクラスターで使用されるファイル システムの中にダウンロードします。**
 
     ```bash
     %sh
@@ -96,7 +96,7 @@ Spark MLLib ライブラリを使って機械学習モデルをトレーニン�
     wget -O /dbfs/mlflow_lab/penguins.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/penguins.csv
     ```
 
-1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 その後、コードによって実行される Spark ジョブが完了するまで待ちます。
+1. そのセルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行します。 その後、コードによって実行される Spark ジョブが完了するまで待ちます。
 
 1. 次に、機械学習用のデータを準備します。 既存のコード セルの下で、 **[+]** アイコンを使用して新しいコード セルを追加します。 次に、新しいセルに次のコードを入力して実行します。
     - 不完全な行を削除します
