@@ -188,7 +188,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    spark.sql("DESCRIBE EXTENDED AdventureWorks.ProductsManaged").show(truncate=False)
     ```
 
-    このテーブルで使用される Parquet ファイルのパスは指定しませんでした。これは Hive メタストアで管理され、テーブルの説明の **Location** プロパティに表示されます。
+    このテーブルで使用される Parquet ファイルのパスは指定しませんでした。これは代わりに Hive メタストアで管理され、テーブルの説明の **Location** プロパティに表示されます。
 
 1. 次のコードを使用して、マネージド テーブルにクエリを実行します。構文はマネージド テーブルの場合と同じであることに注意してください。
 
