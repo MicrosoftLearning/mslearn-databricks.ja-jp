@@ -74,7 +74,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 多くの Spark 環境と同様に、Databricks では、ノートブックを使用して、データの探索に使用できるノートと対話型のコード セルを組み合わせることができます。
 
 1. [**products.csv**](https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/products.csv) ファイルを `https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/products.csv` からローカル コンピューターにダウンロードし、**products.csv** として保存します。
-1. 1. サイドバーの **[(+) 新規]** リンク メニューで、**[ファイル アップロード]** を選択します。
+1. サイドバーの **[(+) 新規]** リンク メニューで、**[ファイル アップロード]** を選択します。
 1. コンピューターにダウンロードした **products.csv** ファイルをアップロードします。
 1. **[ファイル アップロードからのテーブルの作成または変更]** ページで、ページの右上でクラスターが選択されていることを確認します。 次に、**hive_metastore** カタログとその既定のスキーマを選択して、**products** という名前の新しいテーブルを作成します。
 1. **[カタログ エクスプローラー]** ページで、**products** ページが作成されたら、**[作成]** ボタン メニューで、**[ノートブック]** を選択してノートブックを作成します。
