@@ -1,9 +1,9 @@
 ---
 lab:
-  title: Azure Databricks と Azure DevOps または Azure Databricks と GitHub を使用して CI/CD パイプラインを実装する
+  title: Azure Databricks を使用して CI/CD ワークフローを実装する
 ---
 
-# Azure Databricks と Azure DevOps または Azure Databricks と GitHub を使用して CI/CD パイプラインを実装する
+# Azure Databricks を使用して CI/CD ワークフローを実装する
 
 Azure Databricks と Azure DevOps または Azure Databricks と GitHub を使用して継続的インテグレーション (CI) パイプラインと継続的デプロイ (CD) パイプラインを実装するには、コードの変更が統合され、テストされ、効率的にデプロイされるように、一連の自動化された手順を設定する必要があります。 通常、このプロセスには、Git リポジトリへの接続、Azure Pipelines を使用したジョブの実行、コードのビルドと単体テスト、Databricks ノートブックで使用するためのビルド成果物のデプロイが含まれます。 このワークフローにより、堅牢な開発サイクルが可能になり、最新の DevOps プラクティスに合わせた継続的インテグレーションとデリバリーが可能になります。
 
@@ -143,17 +143,22 @@ steps:
   displayName: 'Install Databricks CLI'
 
 - script: |
-    databricks fs cp dbfs:/FileStore/sample_sales.csv .
-  displayName: 'Download Sample Data from DBFS'
+    databricks configure --token <<EOF
+    <your-databricks-host>
+    <your-databricks-token>
+    EOF
+  displayName: 'Configure Databricks CLI'
 
 - script: |
-    python -m unittest discover -s tests
-  displayName: 'Run Unit Tests'
+    databricks fs cp dbfs:/FileStore/sample_sales.csv . --overwrite
+  displayName: 'Download Sample Data from DBFS'
 ```
 
-4. **[保存して実行]** を選択します。
+4. `<your-databricks-host>` と `<your-databricks-token>` を実際の Databricks ホスト URL およびトークンに置き換えます。 これにより、Databricks CLI が使用前に構成されます。
 
-この YAML ファイルは、リポジトリの `main` ブランチへの変更によってトリガーされる CI パイプラインを設定します。 パイプラインは Python 環境を設定し、Databricks CLI をインストールし、Databricks ワークスペースからサンプル データをダウンロードして、Python 単体テストを実行します。 これは CI ワークフローの一般的なセットアップです。
+5. **[保存して実行]** を選択します。
+
+この YAML ファイルは、リポジトリの `main` ブランチへの変更によってトリガーされる CI パイプラインを設定します。 パイプラインは Python 環境を設定し、Databricks CLI をインストールして、Databricks ワークスペースからサンプル データをダウンロードします。 これは CI ワークフローの一般的なセットアップです。
 
 ## CI/CD パイプラインを構成する
 
@@ -179,6 +184,13 @@ stages:
     - script: |
         pip install databricks-cli
       displayName: 'Install Databricks CLI'
+
+    - script: |
+        databricks configure --token <<EOF
+        <your-databricks-host>
+        <your-databricks-token>
+        EOF
+      displayName: 'Configure Databricks CLI'
 
     - script: |
         databricks workspace import_dir /path/to/notebooks /Workspace/Notebooks

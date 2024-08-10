@@ -13,5 +13,5 @@ layout: home
 
 これらの演習を完了するには、管理者アクセス権が与えられている Azure サブスクリプションが必要です。
 
-{% assign exercises = site.pages | where_exp:"page", "page.url contains '/Instructions/Exercises'" %} {% for activity in exercises  %}
+{% assign exercises = site.pages | where_exp:"page", "page.url contains '/Instructions'" %} {% for activity in exercises  %}
 - [{{ activity.lab.title }}]({{ site.github.url }}{{ activity.url }}) | {% endfor %}
