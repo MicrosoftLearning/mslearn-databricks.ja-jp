@@ -1,15 +1,15 @@
 ---
 lab:
-  title: Azure Databricks を使用して CI/CD ワークフローを実装する
+  title: Azure Databricks で CI/CD ワークフローを実装する
 ---
 
-# Azure Databricks を使用して CI/CD ワークフローを実装する
+# Azure Databricks で CI/CD ワークフローを実装する
 
-Azure Databricks と Azure DevOps または Azure Databricks と GitHub を使用して継続的インテグレーション (CI) パイプラインと継続的デプロイ (CD) パイプラインを実装するには、コードの変更が統合され、テストされ、効率的にデプロイされるように、一連の自動化された手順を設定する必要があります。 通常、このプロセスには、Git リポジトリへの接続、Azure Pipelines を使用したジョブの実行、コードのビルドと単体テスト、Databricks ノートブックで使用するためのビルド成果物のデプロイが含まれます。 このワークフローにより、堅牢な開発サイクルが可能になり、最新の DevOps プラクティスに合わせた継続的インテグレーションとデリバリーが可能になります。
+GitHub Actions と Azure Databricks を使用して CI/CD ワークフローを実装すると、開発プロセスを効率化し、自動化を強化できます。 GitHub Actions は、継続的インテグレーション (CI) や継続的デリバリー (CD) など、ソフトウェア ワークフローを自動化するための強力なプラットフォームを提供します。 Azure Databricks と統合すると、これらのワークフローは、ノートブックの実行や Databricks 環境への更新のデプロイなどの複雑なデータ タスクを実行できます。 たとえば、GitHub Actions を使用して、Databricks ノートブックのデプロイを自動化したり、Databricks ファイル システムのアップロードを管理したり、ワークフロー内で Databricks CLI を設定したりできます。 この統合により、特にデータドリブン アプリケーションの場合、より効率的でエラーに強い開発サイクルが容易になります。
 
 このラボは完了するまで、約 **40** 分かかります。
 
->**注:** この演習を完了するには、Github アカウントと Azure DevOps アクセス権が必要です。
+>**注:** この演習を完了するには、Github アカウントが必要です。
 
 ## Azure Databricks ワークスペースをプロビジョニングする
 
@@ -89,141 +89,163 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 3. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
    
-## GitHub リポジトリとAzure DevOps プロジェクトを設定する
+## GitHub リポジトリを設定する
 
-GitHub リポジトリを Azure DevOps プロジェクトに接続したら、リポジトリに加えられた変更をトリガーする CI パイプラインを設定できます。
+GitHub リポジトリを Azure Databricks ワークスペースに接続したら、リポジトリに加えられた変更をトリガーする GitHub Actions の CI/CD パイプラインを設定できます。
 
 1. [GitHub アカウント](https://github.com/)に移動し、プロジェクトの新しいリポジトリを作成します。
 
 2. `git clone` を使用して、ローカル コンピューターにリポジトリを複製します。
 
-3. [CSV ファイル](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/sample_sales.csv)をローカル リポジトリにダウンロードし、変更内容をコミットします。
+3. この演習に必要なファイルをローカル リポジトリにダウンロードします。
+   - [CSV ファイル](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/sample_sales.csv)
+   - [Databricks Notebook](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/sample_sales_notebook.dbc)
+   - [[ジョブ構成ファイル]](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/job-config.json)
 
-4. CSV ファイルの読み取りとデータ変換の実行に使用する [Databricks ノートブック](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/sample_sales_notebook.dbc)をダウンロードします。 変更をコミットします。
+   変更をコミットしてプッシュします。
 
-5. [Azure DevOps ポータル](https://azure.microsoft.com/en-us/products/devops/)に移動し、新しいプロジェクトを作成します。
+## リポジトリ シークレットを設定する
 
-6. Azure DevOps プロジェクトで、 **Repos** セクションに移動し、**[Import]** を選択して GitHub リポジトリに接続します。
+シークレットは、組織、リポジトリ、またはリポジトリ環境内に作成する変数です。 作成したシークレットは、GitHub Actions のワークフローで使用できます。 ワークフローにシークレットを明示的に含めた場合にのみ、GitHub Actions でシークレットを読み取ることができます。
 
-7. 左側のバーで、**[プロジェクト設定] > [サービス接続]** に移動します。
+GitHub Actions ワークフローは Azure Databricks からリソースにアクセスする必要がある場合、認証資格情報は、CI/CD パイプラインで使用される暗号化された変数として格納されます。
 
-8. **[サービス接続の作成]** を選択し、次に **[Azure Resource Manager]** を選択します。
+リポジトリ シークレットを作成する前に、Azure Databricks で個人用アクセス トークンを生成する必要があります。
 
-9. **[認証方法]** ウィンドウで、 **[ワークロード ID フェデレーション (自動)]** を選択します。 [**次へ**] を選択します。
+1. Azure Databricks ワークスペースの上部バーで、目的の Azure Databricks ユーザー名を選択し、次にドロップダウンから **[設定]** を選択します。
 
-10. **[スコープ レベル]** で **[サブスクリプション]** を選択します。 Databricks ワークスペースを作成したサブスクリプションとリソース グループを選択します。
+2. **[開発者]** を選択します。
 
-11. サービス接続の名前を入力し、**[すべてのパイプラインへのアクセス許可を与える]** オプションをオンにします。 **[保存]** を選択します。
+3. 次に、**[アクセス トークン]** の横にある **[管理]** を選択します。
 
-これで、DevOps プロジェクトが Databricks ワークスペースにアクセスできるようになり、パイプラインに接続できるようになります。
+4. **[新しいトークンの生成]** を選択し、**[生成]** を選択します。
 
-## CI/CD パイプラインを構成する
+5. 表示されたトークンを安全な場所にコピーし、**[完了]** を選択します。
 
-1. 左側のバーで、**Pipelines** に移動し **[パイプラインの作成]** を選択します。
+6. リポジトリ ページで、**[設定]** タブを選択します。
 
-2. ソース コードの場所として **[GitHub]** を選択し、リポジトリを選択してください。
+   ![[GitHub の設定] タブ](./images/github-settings.png)
 
-3. **[パイプラインの構成]** ウィンドウで、**[スタート パイプライン]** を選択し、CI パイプラインに次の YAML 構成を使用します。
+7. 左側のサイドバーで、**[シークレットと変数]** を選択し、**[アクション]** を選択します。
 
-```yaml
-trigger:
-- main
+8. **[新しいリポジトリ シークレット]** を選択し次の各変数を追加します。
+   - **名前:** DATABRICKS_HOST **シークレット:** Databricks ワークスペースの URL を追加します。
+   - **名前:** DATABRICKS_TOKEN **シークレット:** 以前に生成されたアクセス トークンを追加します。
 
-pool:
-  vmImage: 'ubuntu-latest'
+## CI/CD パイプラインの設定
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
-    addToPath: true
+GitHub から Azure Databricks ワークスペースにアクセスするために必要な変数を格納したら、データインジェストと処理を自動化するワークフローを作成します。これにより、リポジトリが更新されるたびにトリガーされます。
 
-- script: |
-    pip install databricks-cli
-  displayName: 'Install Databricks CLI'
+1. リポジトリ ページで **[アクション]** タブを選択します。
 
-- script: |
-    databricks configure --token <<EOF
-    <your-databricks-host>
-    <your-databricks-token>
-    EOF
-  displayName: 'Configure Databricks CLI'
+    ![[GitHub Actions] タブ](./images/github-actions.png)
 
-- script: |
-    databricks fs cp dbfs:/FileStore/sample_sales.csv . --overwrite
-  displayName: 'Download Sample Data from DBFS'
-```
+2. [**自分でワークフローを設定する]** を選択し、次のコードを入力します。
 
-4. `<your-databricks-host>` と `<your-databricks-token>` を実際の Databricks ホスト URL およびトークンに置き換えます。 これにより、Databricks CLI が使用前に構成されます。
+     ```yaml
+    name: CI Pipeline for Azure Databricks
 
-5. **[保存して実行]** を選択します。
+    on:
+      push:
+        branches:
+          - main
+      pull_request:
+        branches:
+          - main
 
-この YAML ファイルは、リポジトリの `main` ブランチへの変更によってトリガーされる CI パイプラインを設定します。 パイプラインは Python 環境を設定し、Databricks CLI をインストールして、Databricks ワークスペースからサンプル データをダウンロードします。 これは CI ワークフローの一般的なセットアップです。
+    jobs:
+      deploy:
+        runs-on: ubuntu-latest
 
-## CI/CD パイプラインを構成する
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
 
-1. 左側のバーで、**Pipelines > Releases** に移動し **[リリースの作成]** を選択します。
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.x'
 
-2. 成果物ソースとしてビルド パイプラインを選択します。
+        - name: Install Databricks CLI
+          run: |
+            pip install databricks-cli
 
-3. ステージを追加し、Azure Databricks にデプロイするタスクを構成します。
+        - name: Configure Databricks CLI
+          run: |
+            databricks configure --token <<EOF
+            ${{ secrets.DATABRICKS_HOST }}
+            ${{ secrets.DATABRICKS_TOKEN }}
+            EOF
 
-```yaml
-stages:
-- stage: Deploy
-  jobs:
-  - job: DeployToDatabricks
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.x'
-        addToPath: true
-
-    - script: |
-        pip install databricks-cli
-      displayName: 'Install Databricks CLI'
-
-    - script: |
-        databricks configure --token <<EOF
-        <your-databricks-host>
-        <your-databricks-token>
-        EOF
-      displayName: 'Configure Databricks CLI'
-
-    - script: |
-        databricks workspace import_dir /path/to/notebooks /Workspace/Notebooks
-      displayName: 'Deploy Notebooks to Databricks'
-```
-
-このパイプラインを実行する前に、`/path/to/notebooks` をリポジトリ内のノートブックがあるディレクトリへのパスに置き換え、`/Workspace/Notebooks` を、Databricks ワークスペースでノートブックを保存したいファイル パスに置き換えます。
-
-4. **[保存して実行]** を選択します。
-
-## パイプラインを実行する
-
-1. ローカル レポジトリで、`sample_sales.csv` ファイルの末尾に次の行を追加します。
-
-     ```sql
-    2024-01-01,ProductG,1,500
+        - name: Download Sample Data from DBFS
+          run: databricks fs cp dbfs:/FileStore/sample_sales.csv . --overwrite
      ```
 
-2. 変更をコミットし、GitHub リポジトリにプッシュする。
+このコードでは、Databricks CLI をインストールして構成し、コミットがプッシュされるかプル要求がマージされるたびにサンプル データをリポジトリにダウンロードします。
 
-3. リポジトリ内の変更によって CI パイプラインがトリガーされます。 パイプラインの実行が正常に完了することを確認します。
+3. ワークフロー **CI パイプライン** に名前を付け、**[変更のコミット]** を選択します。 パイプラインは自動的に実行され、**[アクション]** タブでその状態を確認できます。
 
-4. リリース パイプラインで新しいリリースを作成し、ノートブックを Databricks にデプロイします。 ノートブックが Databricks ワークスペースで正常にデプロイされ、実行されていることを確認します。
+ワークフローが完了したら、CD パイプラインの構成をセットアップします。
+
+4. [ワークスペース] ページに移動し、**[コンピューティング]** を選択し、クラスターを選択します。
+
+5. クラスターのページで、**[その他...]** を選択し、**[JSON の表示]** を選択します。 クラスターの ID をコピーします。
+
+6. リポジトリの `job-config.json` を開き、`your_cluster_id` を先ほどコピーしたクラスターの ID に置き換えます。 また、`/Workspace/Users/your_username/your_notebook` を、パイプラインで使用されるノートブックを格納するワークスペース内のパスに置き換えます。 変更をコミットします。
+
+> **注:****[アクション]** タブに移動すると、CI パイプラインが再び実行され始めたことがわかります。 コミットがプッシュされるたびにトリガーされることになっているため、`job-config.json` を変更すると、想定どおりにパイプラインがデプロイされます。
+
+7. **[アクション]** タブで **CD パイプライン**という名前の新しいワークフローを作成し、次のコードを入力します。
+
+     ```yaml
+    name: CD Pipeline for Azure Databricks
+
+    on:
+      push:
+        branches:
+          - main
+
+    jobs:
+      deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.x'
+
+        - name: Install Databricks CLI
+          run: pip install databricks-cli
+
+        - name: Configure Databricks CLI
+          run: |
+            databricks configure --token <<EOF
+            ${{ secrets.DATABRICKS_HOST }}
+            ${{ secrets.DATABRICKS_TOKEN }}
+            EOF
+        - name: Upload Notebook to DBFS
+          run: databricks fs cp /path/to/your/notebook /Workspace/Users/your_username/your_notebook --overwrite
+          env:
+            DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+        - name: Run Databricks Job
+          run: |
+            databricks jobs create --json-file job-config.json
+            databricks jobs run-now --job-id $(databricks jobs list | grep 'CD pipeline' | awk '{print $1}')
+          env:
+            DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+     ```
+
+変更をコミットする前に、`/path/to/your/notebook` をリポジトリ内のノートブックのファイル パスに置き換え、`/Workspace/Users/your_username/your_notebook` を、Azure Databricks ワークスペースでノートブックをインポートしたいファイル パスに置き換えます。
+
+このコードでは、もう一度 Databricks CLI をインストールして構成し、ノートブックを Databricks ファイル システムにインポートし、ワークスペースの **[ワークフロー]** ページで監視できるジョブを作成して実行します。 出力を確認し、データ サンプルが変更されていることを確認します。
 
 ## クリーンアップ
 
 Azure Databricks ポータルの **[コンピューティング]** ページでクラスターを選択し、**[&#9632; 終了]** を選択してクラスターをシャットダウンします。
 
 Azure Databricks を調べ終わったら、作成したリソースを削除できます。これにより、不要な Azure コストが生じないようになり、サブスクリプションの容量も解放されます。
-
-
-
-
-
-
-
