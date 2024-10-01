@@ -65,7 +65,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     - **アクセス モード**: 単一ユーザー (*自分のユーザー アカウントを選択*)
     - **Databricks Runtime のバージョン**: 13.3 LTS (Spark 3.4.1、Scala 2.12) 以降
     - **Photon Acceleration を使用する**: 選択済み
-    - **ノードの種類**: Standard_DS3_v2
+    - **ノード タイプ**: Standard_D4ds_v5
     - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
 
 1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
