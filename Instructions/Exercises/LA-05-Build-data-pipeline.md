@@ -21,7 +21,7 @@ Delta Live Tables は、信頼性、保守性、テスト可能性に優れた�
 
     ![Azure portal と Cloud Shell のペイン](./images/cloud-shell.png)
 
-    > **注**: 前に *Bash* 環境を使ってクラウド シェルを作成している場合は、そのクラウド シェル ペインの左上にあるドロップダウン メニューを使って、***PowerShell*** に変更します。
+    > **注**:前に *Bash* 環境を使ってクラウド シェルを作成した場合は、そのクラウド シェル ペインの左上にあるドロップダウン メニューを使って、***PowerShell*** に変更します。
 
 3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#9723;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
 
@@ -65,7 +65,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     - **アクセス モード**: 単一ユーザー (*自分のユーザー アカウントを選択*)
     - **Databricks Runtime のバージョン**: 13.3 LTS (Spark 3.4.1、Scala 2.12) 以降
     - **Photon Acceleration を使用する**: 選択済み
-    - **ノードの種類**: Standard_DS3_v2
+    - **ノード タイプ**: Standard_D4ds_v5
     - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
 
 1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
@@ -76,7 +76,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。
 
-2. 既定のノートブック名 (**無題のノートブック *[日付]***) を「**Delta Live Tables を使用してパイプラインを作成する**」に変更し、**[接続]** ドロップダウン リストでクラスターを選択します (まだ選択されていない場合)。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
+2. 既定のノートブック名 (**無題のノートブック *[日付]***) を「`Create a pipeline with Delta Live tables`」に変更し、**[接続]** ドロップダウン リストでクラスターを選択します (まだ選択されていない場合)。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
 
 3. ノートブックの最初のセルに次のコードを入力します。このコードは、"シェル" コマンドを使用して、GitHub からクラスターで使用されるファイル システムにデータ ファイルをダウンロードします。**
 
@@ -91,7 +91,9 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 ## SQL を使用して Delta Live Tables パイプラインを作成する
 
-新しい SQL ノートブックを作成し、SQL スクリプトを使用して Delta Live Tables の定義を開始します。 DLT SQL UI が有効になっていることを確認します。
+新しいノートブックを作成し、SQL スクリプトを使用して Delta Live Tables の定義を開始します。
+
+1. ノートブックの名前の横にある **Python** を選択し、既定の言語を **SQL** に変更します。
 
 1. 最初のセルに次のコードを実行せずに配置します。 すべてのセルは、パイプラインの作成後に実行されます。 このコードでは、以前ダウンロードした生データによって設定される Delta Live Table を定義します。
 
@@ -117,7 +119,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     COMMENT "Formatted and filtered data for analysis."
     AS
     SELECT
-        DATE_FORMAT(Last_Update, 'MM/dd/yyyy') as Report_Date,
+        TO_DATE(Last_Update, 'MM/dd/yyyy') as Report_Date,
         Country_Region,
         Confirmed,
         Deaths,
@@ -154,8 +156,8 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
  
 7. パイプラインが正常に実行されたら、最初のノートブックに戻り、次のコードを使用して、指定したストレージの場所に 3 つの新しいテーブルがすべて作成されていることを確認します。
 
-     ```sql
-    display(dbutils.fs.ls("dbfs:/pipelines/delta_lab"))
+     ```python
+    display(dbutils.fs.ls("dbfs:/pipelines/delta_lab/tables"))
      ```
 
 ## 結果を視覚化として表示する

@@ -67,7 +67,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
         - *Scala > **2.11** を含める*
         - "**3.4** 以上の Spark を含む"**
     - **Photon Acceleration を使用する**: <u>オフ</u>にする
-    - **ノードの種類**: Standard_DS3_v2
+    - **ノード タイプ**: Standard_D4ds_v5
     - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
 
 1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
@@ -405,91 +405,6 @@ PyTorch では、トレーニング データと検証データが、"*データ
    
    print('Prediction:',predicted.item())
     ```
-
-## Horovod を使用してトレーニングを配布する
-
-前のモデル トレーニングは、クラスターの単一ノードで実行されました。 実際のところ、ディープ ラーニング モデルのトレーニングは一般的に、1 台のコンピューターで複数の CPU (または GPU) にわたってスケーリングすることをお勧めします。ただし、大量のトレーニング データを、ディープ ラーニング モデルの複数のレイヤーに渡して通過させる必要がある場合は、トレーニング作業を複数のクラスター ノードに分散させることで、ある程度効率化を図れることがあります。
-
-Horovod は、ディープ ラーニング トレーニングを、Spark クラスター内の複数のノード (Azure Databricks ワークスペースにプロビジョニングされているノードなど) に配布するときに使用できるオープン ソース ライブラリです。
-
-### トレーニング関数を作成する
-
-Horovod を使用するには、トレーニング設定を構成するコードをカプセル化し、新しい関数で**トレーニング**関数を呼び出します。これを **HorovodRunner** クラスを使用して実行し、複数のノードに実行を分散します。 トレーニング ラッパー関数では、さまざまな Horovod クラスを使用して分散データ ローダーを定義することで、各ノードがデータセット全体のサブセットで動作し、モデルの重みとオプティマイザーの初期状態をすべてのノードにブロードキャストし、使用されているノードの数を特定し、コードが実行されているノードを判断できるようにします。
-
-1. 次のコードを実行して、Horovod を使用してモデルをトレーニングする関数を作成します。
-
-    ```python
-   import horovod.torch as hvd
-   from sparkdl import HorovodRunner
-   
-   def train_hvd(model):
-       from torch.utils.data.distributed import DistributedSampler
-       
-       hvd.init()
-       
-       device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-       if device.type == 'cuda':
-           # Pin GPU to local rank
-           torch.cuda.set_device(hvd.local_rank())
-       
-       # Configure the sampler so that each worker gets a distinct sample of the input dataset
-       train_sampler = DistributedSampler(train_ds, num_replicas=hvd.size(), rank=hvd.rank())
-       # Use train_sampler to load a different sample of data on each worker
-       train_loader = torch.utils.data.DataLoader(train_ds, batch_size=20, sampler=train_sampler)
-       
-       # The effective batch size in synchronous distributed training is scaled by the number of workers
-       # Increase learning_rate to compensate for the increased batch size
-       learning_rate = 0.001 * hvd.size()
-       optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-       
-       # Wrap the local optimizer with hvd.DistributedOptimizer so that Horovod handles the distributed optimization
-       optimizer = hvd.DistributedOptimizer(optimizer, named_parameters=model.named_parameters())
-   
-       # Broadcast initial parameters so all workers start with the same parameters
-       hvd.broadcast_parameters(model.state_dict(), root_rank=0)
-       hvd.broadcast_optimizer_state(optimizer, root_rank=0)
-   
-       optimizer.zero_grad()
-   
-       # Train over 50 epochs
-       epochs = 100
-       for epoch in range(1, epochs + 1):
-           print('Epoch: {}'.format(epoch))
-           # Feed training data into the model to optimize the weights
-           train_loss = train(model, train_loader, optimizer)
-   
-       # Save the model weights
-       if hvd.rank() == 0:
-           model_file = '/dbfs/penguin_classifier_hvd.pt'
-           torch.save(model.state_dict(), model_file)
-           print('model saved as', model_file)
-    ```
-
-1. 次のコードを使用して、**HorovodRunner** オブジェクトから自分の関数を呼び出します。
-
-    ```python
-   # Reset random seed for PyTorch
-   torch.manual_seed(0)
-   
-   # Create a new model
-   new_model = PenguinNet()
-   
-   # We'll use CrossEntropyLoss to optimize a multiclass classifier
-   loss_criteria = nn.CrossEntropyLoss()
-   
-   # Run the distributed training function on 2 nodes
-   hr = HorovodRunner(np=2, driver_log_verbosity='all') 
-   hr.run(train_hvd, model=new_model)
-   
-   # Load the trained weights and test the model
-   test_model = PenguinNet()
-   test_model.load_state_dict(torch.load('/dbfs/penguin_classifier_hvd.pt'))
-   test_loss = test(test_model, test_loader)
-    ```
-
-すべての出力を表示するには、スクロールしなければならない場合があります。これにより Horovod からの情報メッセージに続いて、ノードからのログ出力が表示されるはずです (**driver_log_verbosity** パラメーターが **all** に設定されているため)。 ノード出力には、各エポックの後の損失が表示されます。 最後に、**テスト**関数を使用して、トレーニング済みのモデルをテストします。
-
-> **ヒント**: 各エポックの後の損失が減らない場合は、セルをもう一度実行してみてください。
 
 ## クリーンアップ
 

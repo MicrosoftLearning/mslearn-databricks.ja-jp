@@ -1,13 +1,17 @@
 ---
 lab:
-  title: Azure Databricks で Microsoft Purview と Unity Catalog を使用したデータ プライバシーとガバナンスの実装
+  title: Azure Databricks で Unity Catalog を使用してデータ プライバシーとガバナンスを実装する
 ---
 
-# Azure Databricks で Microsoft Purview と Unity Catalog を使用したデータ プライバシーとガバナンスの実装
+# Azure Databricks で Unity Catalog を使用してデータ プライバシーとガバナンスを実装する
 
-Microsoft Purview を使用すると、データ資産全体にわたる包括的なデータ ガバナンスを実現し、Azure Databricks とシームレスに統合して Lakehouse データを管理し、メタデータをデータ マップに取り込むことができます。 Unity Catalog では、データ管理とガバナンスを一元化することでこれを強化し、Databricks ワークスペース全体のセキュリティとコンプライアンスを簡素化します。
+Unity Catalog は、データ アクセスの管理や監査を行う一元的な場所を提供してセキュリティを簡素化することによって、データと AI の一元的なガバナンス ソリューションを実現します。 機密情報の保護に不可欠な、詳細なアクセス制御リスト (ACL) と動的データ マスキングをサポートしています。 
 
 このラボは完了するまで、約 **30** 分かかります。
+
+## 開始する前に
+
+管理レベルのアクセス権を持つ [Azure サブスクリプション](https://azure.microsoft.com/free)が必要です。
 
 ## Azure Databricks ワークスペースをプロビジョニングする
 
@@ -65,7 +69,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     - **アクセス モード**: 単一ユーザー (*自分のユーザー アカウントを選択*)
     - **Databricks Runtime のバージョン**: 13.3 LTS (Spark 3.4.1、Scala 2.12) 以降
     - **Photon Acceleration を使用する**: 選択済み
-    - **ノードの種類**: Standard_DS3_v2
+    - **ノード タイプ**: Standard_D4ds_v5
     - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
 
 1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
@@ -121,66 +125,42 @@ Unity Catalog メタストアには、セキュリティ保護可能なオブジ
 
 >**注:** `.load` ファイル パスで、`databricksxxxxxxx` をカタログ名に置き換えます。
 
-9. カタログ エクスプローラーで、`sample_data` ボリュームに移動し、その中に新しいテーブルがあることを確認します。
+9. カタログ エクスプローラーで、`ecommerce` スキーマに移動し、その中に新しいテーブルが含まれていることを確認します。
     
-## Microsoft Purview を設定する
+## ACL と動的データ マスキングを設定する
 
-Microsoft Purview は、組織がさまざまな環境でデータを管理およびセキュリティで保護するのに役立つ統合データ ガバナンス サービスです。 データ損失防止、情報保護、コンプライアンス管理などの機能を備えた Microsoft Purview には、そのライフサイクル全体を通じてデータを理解、管理、保護するためのツールが用意されています。
+アクセス制御リスト (ACL) は、Azure Databricks のデータ セキュリティの基本的な側面であり、さまざまなワークスペース オブジェクトのアクセス許可を構成できます。 Unity Catalog を使用すると、データ アクセスのガバナンスと監査を一元化し、データと AI 資産の管理に不可欠な詳細なセキュリティ モデルを提供できます。 
 
-1. [Azure Portal](https://portal.azure.com/) に移動します。
-
-2. **[リソースの作成]** を選択し、**Microsoft Purview** を検索します。
-
-3. 次の設定を使って **Microsoft Purview** リソースを作成します。
-    - **[サブスクリプション]**: *Azure サブスクリプションを選択します*
-    - **リソース グループ**: * Azure Databricks ワークスペースと同じリソース グループを選択します*
-    - **Microsoft Purview アカウント名**: *任意の一意の名前*
-    - **位置情報**: * Azure Databricks ワークスペースと同じリージョンを選択します*
-
-4. **[確認および作成]** を選択します。 検証を待ってから、**[作成]** を選択します。
-
-5. デプロイが完了するまで待ちます。 次に、Azure portal でデプロイされた Azure OpenAI リソースに移動します。
-
-6. Microsoft Purview ガバナンス ポータルで、サイドバーの **データマップ** セクションに移動します。
-
-7. **[データソース]** ウィンドウで、**[登録]** を選びます。
-
-8. **[データ ソースの登録]** ウィンドウで、**Azure Databricks** を検索して選択します。 **続行**を選択します。
-
-9. データ ソースに一意の名前を付け、Azure Databricks ワークスペースを選択します。 **登録** を選択します。
-
-## データ プライバシーとガバナンス ポリシーを実装する
-
-1. サイドバーの **データ マップ** セクションで、**[分類]** を選択します。
-
-2. **[分類]** ウィンドウで、**[ + 新規]** を選択し、**PII** (個人を特定できる情報) という名前の新しい分類を作成します。 **[OK]** を選択します。
-
-3. サイドバーで **[Data Catalog]** を選択し、**Customers** テーブルに移動します。
-
-4. PII 分類を電子メールと電話の列に適用します。
-
-5. Azure Databricks に移動し、以前に作成したノートブックを開きます。
- 
-6. 新しいセルで、次のコードを実行して、PII データへのアクセスを制限するデータ アクセス ポリシーを作成します。
+1. 新しいセルで次のコードを実行して、`customers` テーブルのセキュリティで保護されたビューを作成し、PII (個人を特定できる情報) データへのアクセスを制限します。
 
      ```sql
-    CREATE OR REPLACE TABLE ecommerce.customers (
-      customer_id STRING,
-      name STRING,
-      email STRING,
-      phone STRING,
-      address STRING,
-      city STRING,
-      state STRING,
-      zip_code STRING,
-      country STRING
-    ) TBLPROPERTIES ('data_classification'='PII');
-
-    GRANT SELECT ON TABLE ecommerce.customers TO ROLE data_scientist;
-    REVOKE SELECT (email, phone) ON TABLE ecommerce.customers FROM ROLE data_scientist;
+    CREATE VIEW ecommerce.customers_secure_view AS
+    SELECT 
+        customer_id, 
+        name, 
+        address,
+        city,
+        state,
+        zip_code,
+        country, 
+        CASE 
+            WHEN current_user() = 'admin_user@example.com' THEN email
+            ELSE NULL 
+        END AS email, 
+        CASE 
+            WHEN current_user() = 'admin_user@example.com' THEN phone 
+            ELSE NULL 
+        END AS phone
+    FROM ecommerce.customers;
      ```
 
-7. data_scientist ロールを持つユーザーとして、顧客テーブルのクエリを試みます。 PII 列 (電子メールと電話) へのアクセスが制限されていることを確認します。
+2. セキュリティで保護されたビューに対してクエリを実行します。
+
+     ```sql
+    SELECT * FROM ecommerce.customers_secure_view
+     ```
+
+`admin_user@example.com` としてデータにアクセスしていないため、PII 列 (メールと電話) へのアクセスが制限されていることを確認します。
 
 ## クリーンアップ
 
