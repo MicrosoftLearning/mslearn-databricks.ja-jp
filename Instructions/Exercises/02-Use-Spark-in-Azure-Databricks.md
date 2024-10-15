@@ -1,6 +1,6 @@
 ---
 lab:
-  title: Azure Databricks で Apache Spark を使用する
+  title: '非推奨: Azure Databricks で Apache Spark を使用する'
 ---
 
 # Azure Databricks で Apache Spark を使用する

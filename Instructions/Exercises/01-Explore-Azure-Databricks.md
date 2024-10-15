@@ -1,6 +1,6 @@
 ---
 lab:
-  title: Azure Databricks を探索する
+  title: '非推奨: Azure Databricks を探索する'
 ---
 
 # Azure Databricks を探索する

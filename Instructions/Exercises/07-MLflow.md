@@ -1,6 +1,6 @@
 ---
 lab:
-  title: Azure Databricks で MLflow を使用する
+  title: '非推奨: Azure Databricks で MLflow を使用する'
 ---
 
 # Azure Databricks で MLflow を使用する
