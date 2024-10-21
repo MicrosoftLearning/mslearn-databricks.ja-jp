@@ -1,6 +1,6 @@
 ---
 lab:
-  title: Azure Databricks で Delta Lake を使用する
+  title: '非推奨: Azure Databricks で Delta Lake を使用する'
 ---
 
 # Azure Databricks で Delta Lake を使用する
@@ -13,7 +13,7 @@ Delta Lake は、データ レイクの上に Spark 用のトランザクショ�
 
 > **ヒント**: 既に Azure Databricks ワークスペースがある場合は、この手順をスキップして、既存のワークスペースを使用できます。
 
-この演習には、新しい Azure Databricks ワークスペースをプロビジョニングするスクリプトが含まれています。 このスクリプトは、この演習で必要なコンピューティング コアに対する十分なクォータが Azure サブスクリプションにあるリージョンに、*Premium* レベルの Azure Databricks ワークスペース リソースを作成しようとします。また、使用するユーザー アカウントのサブスクリプションに、Azure Databricks ワークスペース リソースを作成するための十分なアクセス許可があることを前提としています。 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、Azure portal で、Azure Databricks ワークスペースを対話形式で作成してみてください。
+この演習には、新しい Azure Databricks ワークスペースをプロビジョニングするスクリプトが含まれています。 このスクリプトは、この演習で必要なコンピューティング コアに対する十分なクォータが Azure サブスクリプションにあるリージョンに、*Premium* レベルの Azure Databricks ワークスペース リソースを作成しようとします。また、使用するユーザー アカウントのサブスクリプションに、Azure Databricks ワークスペース リソースを作成するための十分なアクセス許可があることを前提としています。 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、[Azure portal で、Azure Databricks ワークスペースを対話形式で作成](https://learn.microsoft.com/azure/databricks/getting-started/#--create-an-azure-databricks-workspace)してみてください。
 
 1. Web ブラウザーで、`https://portal.azure.com` の [Azure portal](https://portal.azure.com) にサインインします。
 2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。メッセージが表示されたら、***PowerShell*** 環境を選んで、ストレージを作成します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
@@ -82,7 +82,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     wget -O /dbfs/delta_lab/products.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/products.csv
     ```
 
-1. そのセルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行します。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
+1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
 1. 既存のコード セルの下で、 **[+]** アイコンを使用して新しいコード セルを追加します。 次に、新しいセルに次のコードを入力して実行し、ファイルからデータを読み込み、最初の 10 行を表示します。
 
     ```python
@@ -156,8 +156,8 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 ここまで、テーブルの基になった Parquet ファイルが含まれるフォルダーからデータを読み込むことで、デルタ テーブルを操作しました。 データをカプセル化する "カタログ テーブル" を定義し、SQL コードで参照できる名前付きテーブル エンティティを提供できます。** Spark では、デルタ レイク用に次の 2 種類のカタログ テーブルがサポートされています。
 
-- テーブル データを含む Parquet ファイルへのパスで定義される "外部" テーブル。**
-- Spark プール用の Hive メタストアで定義されている "*マネージド*" テーブル。
+- テーブル データを含むファイルへのパスで定義される "外部" テーブル。**
+- メタストアに定義される "マネージド" テーブル。**
 
 ### 外部テーブルを作成する
 
@@ -188,7 +188,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    spark.sql("DESCRIBE EXTENDED AdventureWorks.ProductsManaged").show(truncate=False)
     ```
 
-    このテーブルで使用される Parquet ファイルのパスは指定しませんでした。これは Hive メタストアで管理され、テーブルの説明の **Location** プロパティ (**dbfs:/user/hive/warehouse/** パス内) に表示されます。
+    このテーブルで使用される Parquet ファイルのパスは指定しませんでした。これは Hive メタストアで管理され、テーブルの説明の **Location** プロパティに表示されます。
 
 1. 次のコードを使用して、マネージド テーブルにクエリを実行します。構文はマネージド テーブルの場合と同じであることに注意してください。
 

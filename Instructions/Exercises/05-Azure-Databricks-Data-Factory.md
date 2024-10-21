@@ -1,6 +1,6 @@
 ---
 lab:
-  title: Azure Data Factory を使用して Azure Databricks ノートブックを自動化する
+  title: '非推奨: Azure Data Factory を使用して Azure Databricks ノートブックを自動化する'
 ---
 
 # Azure Data Factory を使用して Azure Databricks ノートブックを自動化する

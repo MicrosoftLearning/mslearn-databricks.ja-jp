@@ -1,6 +1,6 @@
 ---
 lab:
-  title: Azure Databricks で機械学習用にハイパーパラメーターを最適化する
+  title: '非推奨: Azure Databricks で機械学習用にハイパーパラメーターを最適化する'
 ---
 
 # Azure Databricks で機械学習用にハイパーパラメーターを最適化する
