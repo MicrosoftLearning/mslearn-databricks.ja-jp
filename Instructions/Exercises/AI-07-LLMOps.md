@@ -108,10 +108,10 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 3. ノートブックに名前を付け、言語として [`Python`] を選択します。
 
-4. 最初のコード セルに、次のコードを入力して実行し、必要なライブラリをインストールします。
+4. 最初のコード セルに、次のコードを入力して実行し、OpenAI ライブラリをインストールします。
    
      ```python
-    %pip install azure-ai-openai flask
+    %pip install openai
      ```
 
 5. インストールが完了したら、新しいセルでカーネルを再起動します。
@@ -122,80 +122,66 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 ## MLflow を使用して LLM をログする
 
+MLflow の LLM 追跡機能を使用すると、パラメーター、メトリック、予測、および成果物をログに記録できます。 パラメーターには入力構成の詳細を示すキーと値のペアが含まれるのに対して、メトリックはパフォーマンスの定量的な測定値を提供します。 予測には、入力プロンプトとモデルの応答の両方が含まれており、簡単に取得できるように成果物として格納されています。 この構造化ログは、各対話の詳細な記録を維持するのに役立ち、LLM の分析と最適化の向上を促進します。
+
+1. 新しいセルで、この演習の冒頭でコピーしたアクセス情報を含む次のコードを実行して、Azure OpenAI リソースを使用するときに認証用の永続的な環境変数を割り当てます。
+
+     ```python
+    import os
+
+    os.environ["AZURE_OPENAI_API_KEY"] = "your_openai_api_key"
+    os.environ["AZURE_OPENAI_ENDPOINT"] = "your_openai_endpoint"
+    os.environ["AZURE_OPENAI_API_VERSION"] = "2023-03-15-preview"
+     ```
 1. 新しいセルで、次のコードを実行して、Azure OpenAI クライアントを初期化します。
 
      ```python
-    from azure.ai.openai import OpenAIClient
+    import os
+    from openai import AzureOpenAI
 
-    client = OpenAIClient(api_key="<Your_API_Key>")
-    model = client.get_model("gpt-3.5-turbo")
+    client = AzureOpenAI(
+       azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
+       api_key = os.getenv("AZURE_OPENAI_API_KEY"),
+       api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+    )
      ```
 
-1. 新しいセルで、次のコードを実行して、MLflow 追跡を初期化します。     
+1. 新しいセルで、次のコードを実行して、MLflow 追跡を初期化しモデルをログに記録します。     
 
      ```python
     import mlflow
+    from openai import AzureOpenAI
 
-    mlflow.set_tracking_uri("databricks")
-    mlflow.start_run()
-     ```
+    system_prompt = "Assistant is a large language model trained by OpenAI."
 
-1. 新しいセルで、次のコードを実行して、モデルをログします。
+    mlflow.openai.autolog()
 
-     ```python
-    mlflow.pyfunc.log_model("model", python_model=model)
+    with mlflow.start_run():
+
+        response = client.chat.completions.create(
+            model="gpt-35-turbo",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": "Tell me a joke about animals."},
+            ],
+        )
+
+        print(response.choices[0].message.content)
+        mlflow.log_param("completion_tokens", response.usage.completion_tokens)
     mlflow.end_run()
      ```
 
-## モデルをデプロイする
-
-1. 新しいノートブックを作成し、最初のセルで、次のコードを実行して、モデルの REST API を作成します。
-
-     ```python
-    from flask import Flask, request, jsonify
-    import mlflow.pyfunc
-
-    app = Flask(__name__)
-
-    @app.route('/predict', methods=['POST'])
-    def predict():
-        data = request.json
-        model = mlflow.pyfunc.load_model("model")
-        prediction = model.predict(data["input"])
-        return jsonify(prediction)
-
-    if __name__ == '__main__':
-        app.run(host='0.0.0.0', port=5000)
-     ```
+上記のセルは、ワークスペースで実験を開始し、各チャット完了イテレーションのトレースを登録して、各実行の入力、出力、およびメタデータを追跡します。
 
 ## モデルを監視する
 
-1. 最初のノートブックで、新しいセルを作成し、次のコードを実行して、MLflow の自動ログ記録を有効にします。
+1. 左側のサイドバーで **[実験]** を選択し、この演習で使用したノートブックに関連付けられている実験を選択します。 最新の実行を選択し、ログに記録された 1 つのパラメーター `completion_tokens` があることを [概要] ページで確認します。 コマンド `mlflow.openai.autolog()` を実行すると、既定で各実行のトレースがログに記録されますが、モデルを監視するために後で使用できる `mlflow.log_param()` を使用すると、追加のパラメーターをログに記録することもできます。
 
-     ```python
-    mlflow.autolog()
-     ```
+1. **[トレース]** タブを選択し、最後に作成されたものを選択します。 `completion_tokens` パラメーターがトレースの出力に含まれていることを確認します。
 
-1. 新しいセルで、次のコードを実行して、予測と入力データを追跡します。
+   ![MLFlow トレース UI](./images/trace-ui.png)  
 
-     ```python
-    mlflow.log_param("input", data["input"])
-    mlflow.log_metric("prediction", prediction)
-     ```
-
-1. 新しいセルで、次のコードを実行して、データ ドリフトを監視します。
-
-     ```python
-    import pandas as pd
-    from evidently.dashboard import Dashboard
-    from evidently.tabs import DataDriftTab
-
-    report = Dashboard(tabs=[DataDriftTab()])
-    report.calculate(reference_data=historical_data, current_data=current_data)
-    report.show()
-     ```
-
-モデルの監視を開始したら、データ ドリフト検出に基づいて自動再トレーニング パイプラインを設定できます。
+モデルの監視を開始したら、さまざまな実行のトレースを比較してデータ ドリフトを検出できます。 入力データ分布、モデル予測、またはパフォーマンス メトリックの大幅な時間的変化を探します。 統計テストまたは視覚化ツールを使用すると、この分析に役立ちます。
 
 ## クリーンアップ
 
