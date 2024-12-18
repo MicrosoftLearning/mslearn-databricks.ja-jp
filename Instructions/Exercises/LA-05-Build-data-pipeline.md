@@ -9,6 +9,8 @@ Delta Live Tables は、信頼性、保守性、テスト可能性に優れた�
 
 このラボは完了するまで、約 **40** 分かかります。
 
+> **注**: Azure Databricks ユーザー インターフェイスは継続的な改善の対象となります。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている場合があります。
+
 ## Azure Databricks ワークスペースをプロビジョニングする
 
 > **ヒント**: 既に Azure Databricks ワークスペースがある場合は、この手順をスキップして、既存のワークスペースを使用できます。
@@ -16,14 +18,13 @@ Delta Live Tables は、信頼性、保守性、テスト可能性に優れた�
 この演習には、新しい Azure Databricks ワークスペースをプロビジョニングするスクリプトが含まれています。 このスクリプトは、この演習で必要なコンピューティング コアに対する十分なクォータが Azure サブスクリプションにあるリージョンに、*Premium* レベルの Azure Databricks ワークスペース リソースを作成しようとします。また、使用するユーザー アカウントのサブスクリプションに、Azure Databricks ワークスペース リソースを作成するための十分なアクセス許可があることを前提としています。 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、[Azure portal で、Azure Databricks ワークスペースを対話形式で作成](https://learn.microsoft.com/azure/databricks/getting-started/#--create-an-azure-databricks-workspace)してみてください。
 
 1. Web ブラウザーで、`https://portal.azure.com` の [Azure portal](https://portal.azure.com) にサインインします。
-
-2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。メッセージが表示されたら、***PowerShell*** 環境を選んで、ストレージを作成します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
+2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。***PowerShell*** 環境を選択します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
 
     ![Azure portal と Cloud Shell のペイン](./images/cloud-shell.png)
 
-    > **注**:前に *Bash* 環境を使ってクラウド シェルを作成した場合は、そのクラウド シェル ペインの左上にあるドロップダウン メニューを使って、***PowerShell*** に変更します。
+    > **注**: *Bash* 環境を使用するクラウド シェルを以前に作成した場合は、それを ***PowerShell*** に切り替えます。
 
-3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#9723;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
+3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#10530;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
 
 4. PowerShell のペインで、次のコマンドを入力して、リポジトリを複製します。
 
@@ -40,7 +41,7 @@ Delta Live Tables は、信頼性、保守性、テスト可能性に優れた�
 
 6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
 
-7. スクリプトが完了するまで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの[Delta Lake の概要](https://docs.microsoft.com/azure/databricks/delta/delta-intro)に関する記事をご確認ください。
+7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間、Azure Databricks ドキュメントの記事「[Databricks SQL とは](https://learn.microsoft.com/azure/databricks/delta-live-tables/)」を確認してください。
 
 ## クラスターの作成
 
@@ -56,7 +57,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
     > **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
 
-1. 左側のサイドバーで、**[(+) 新規]** タスクを選択し、**[クラスター]** を選択します。
+1. 左側のサイドバーで、**[(+) 新規]** タスクを選択し、**[クラスター]** を選択します (**[その他]** サブメニューを確認する必要がある場合があります)。
 
 1. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
     - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
@@ -91,7 +92,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 ## SQL を使用して Delta Live Tables パイプラインを作成する
 
-新しいノートブックを作成し、SQL スクリプトを使用して Delta Live Tables の定義を開始します。
+1. 新しいノートブックを作成し、名前を[`Pipeline Notebook`]に変更します。
 
 1. ノートブックの名前の横にある **Python** を選択し、既定の言語を **SQL** に変更します。
 
@@ -110,7 +111,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     FROM read_files('dbfs:/delta_lab/covid_data.csv', format => 'csv', header => true)
      ```
 
-2. 新しいセルを追加し、次のコードを使用して、分析前に前のテーブルのデータのクエリの実行、フィルター処理、書式設定を行います。
+1. 最初のセルの下で、**+ コード** アイコンを使用して新しいセルを追加し、分析前に前のテーブルのデータのクエリ、フィルター処理、およびフォーマットを行う次のコードを入力します。
 
      ```sql
     CREATE OR REFRESH LIVE TABLE processed_covid_data(
@@ -127,7 +128,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     FROM live.raw_covid_data;
      ```
 
-3. 新しいコード セルに、パイプラインが正常に実行されると、さらに分析するためにエンリッチされたデータ ビューを作成する次のコードを配置します。
+1. 3 番目の新しいコード セルに次のコードを入力します。これにより、パイプラインが正常に実行された後にさらに分析するための強化されたデータ ビューが作成されます。
 
      ```sql
     CREATE OR REFRESH LIVE TABLE aggregated_covid_data
@@ -142,33 +143,43 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     GROUP BY Report_Date;
      ```
      
-4. 左サイドバーで **[Delta Live Tables]** を選択し、**[パイプラインの作成]** を選択します。
+1. 左側のサイドバーで **Delta Live Tables** を選択し、 **[パイプラインの作成]** を選択します。
 
-5. **[パイプラインの作成**] ページで、次の設定を使用して新しいパイプラインを作成します。
-    - **パイプライン名**: パイプラインに名前を付ける
+1. **[パイプラインの作成**] ページで、次の設定を使用して新しいパイプラインを作成します。
+    - **パイプライン名**: `Covid Pipeline`
     - **製品エディション**: 詳細
     - **パイプライン モード**: トリガー
-    - **ソース コード**: SQL ノートブックを選択する
+    - **ソース コード**: *フォルダー*内のパイプライン ノートブック*ノートブックを参照します*Users/user@name *。*
     - **ストレージ オプション**: Hive メタストア
-    - **ストレージの場所**: dbfs:/pipelines/delta_lab
+    - **保存場所**: `dbfs:/pipelines/delta_lab`
+    - **ターゲット スキーマ**: *入力する*`default`
 
-6. **[作成]** を選択して、**[開始]** を選択します。
+1. **[作成]** を選択して、**[開始]** を選択します。 次に、パイプラインが実行されるまで待機します (時間がかかる場合があります)。
  
-7. パイプラインが正常に実行されたら、最初のノートブックに戻り、次のコードを使用して、指定したストレージの場所に 3 つの新しいテーブルがすべて作成されていることを確認します。
+1. パイプラインが正常に実行された後、最近作成した *[Delta Live Tables を使用してパイプラインを作成]* ノートブックに戻り、新しいセルで以下のコードを実行して、3つの新しいテーブルのファイルが指定された保存場所に作成されたことを確認します：
 
      ```python
     display(dbutils.fs.ls("dbfs:/pipelines/delta_lab/tables"))
+     ```
+
+1. 別のコード セルを追加し、次のコードを実行して、テーブルが **デフォルト** データベースに作成されていることを確認します。
+
+     ```sql
+    %sql
+
+    SHOW TABLES
      ```
 
 ## 結果を視覚化として表示する
 
 テーブルを作成した後、テーブルをデータフレームに読み込み、データを視覚化することができます。
 
-1. 最初のノートブックで、新しいコード セルを追加し、次のコードを実行して `aggregated_covid_data` をデータフレームに読み込みます。
+1. *[Delta Live Tables を使用してパイプラインを作成]* ノートブックで、新しいコード セルを追加し、次のコードを実行して `aggregated_covid_data` をデータフレームに読み込みます。
 
-    ```python
-   df = spark.read.format("delta").load('/pipelines/delta_lab/tables/aggregated_covid_data')
-   display(df)
+    ```sql
+    %sql
+    
+    SELECT * FROM aggregated_covid_data
     ```
 
 1. 結果の表の上にある **[+]** 、 **[視覚化]** の順に選択して視覚化エディターを表示し、次のオプションを適用します。
