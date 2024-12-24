@@ -1,15 +1,15 @@
 ---
 lab:
-  title: Azure Databricks を使用した Spark 構造化ストリーミングと Delta Lake を使用したリアルタイムのインジェストと処理
+  title: Azure Databricks と共に Spark 構造化ストリーミングと Delta Lake を使用したリアルタイム データ処理
 ---
 
-# Azure Databricks を使用した Spark 構造化ストリーミングと Delta Lake を使用したリアルタイムのインジェストと処理
+# Azure Databricks と共に Spark 構造化ストリーミングと Delta Lake を使用したリアルタイム データ処理
 
 Spark Structured Streaming を使用すると、エンドツーエンドのフォールト トレランスを使用してリアルタイムでデータを処理できます。 Delta Lakeは、ACIDトランザクションを提供するストレージ層を追加することでこれを強化し、データの整合性と一貫性を確保します。 クラウド ストレージから Delta Lake にデータを取り込み、Delta Live Tables を使用してストリーミング データ パイプラインを管理および最適化できます。
 
 このラボは完了するまで、約 **30** 分かかります。
 
-> **注**: Azure Databricks ユーザー インターフェイスは継続的な改善の対象となります。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている可能性があります。
+> **注**: Azure Databricks ユーザー インターフェイスは継続的な改善の対象となります。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている場合があります。
 
 ## Azure Databricks ワークスペースをプロビジョニングする
 
@@ -18,13 +18,13 @@ Spark Structured Streaming を使用すると、エンドツーエンドのフ�
 この演習には、新しい Azure Databricks ワークスペースをプロビジョニングするスクリプトが含まれています。 このスクリプトは、この演習で必要なコンピューティング コアに対する十分なクォータが Azure サブスクリプションにあるリージョンに、*Premium* レベルの Azure Databricks ワークスペース リソースを作成しようとします。また、使用するユーザー アカウントのサブスクリプションに、Azure Databricks ワークスペース リソースを作成するための十分なアクセス許可があることを前提としています。 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、[Azure portal で、Azure Databricks ワークスペースを対話形式で作成](https://learn.microsoft.com/azure/databricks/getting-started/#--create-an-azure-databricks-workspace)してみてください。
 
 1. Web ブラウザーで、`https://portal.azure.com` の [Azure portal](https://portal.azure.com) にサインインします。
-2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal で ***PowerShell*** 環境を選択し、新しい Cloud Shell を作成します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
+2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。***PowerShell*** 環境を選択します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
 
     ![Azure portal と Cloud Shell のペイン](./images/cloud-shell.png)
 
     > **注**: *Bash* 環境を使用するクラウド シェルを以前に作成した場合は、それを ***PowerShell*** に切り替えます。
 
-3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;**、**&#10530;**、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりできます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
+3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#10530;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
 
 4. PowerShell のペインで、次のコマンドを入力して、リポジトリを複製します。
 
@@ -41,7 +41,7 @@ Spark Structured Streaming を使用すると、エンドツーエンドのフ�
 
 6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
 
-7. スクリプトが完了するまで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの[Delta Lake の概要](https://docs.microsoft.com/azure/databricks/delta/delta-intro)に関する記事をご確認ください。
+7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの記事「[ストリーミング データに対してクエリを実行する](https://learn.microsoft.com/azure/databricks/query/streaming)」を確認してください。
 
 ## クラスターの作成
 
