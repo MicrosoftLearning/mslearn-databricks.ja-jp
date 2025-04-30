@@ -5,7 +5,7 @@ lab:
 
 # Azure Databricks で機械学習用にハイパーパラメーターを最適化する
 
-この演習では、**Hyperopt** ライブラリを使って、Azure Databricks での機械学習モデルのトレーニングのハイパーパラメーターを最適化します。
+この演習では、**Optuna** ライブラリを使用して、Azure Databricks での機械学習モデルのトレーニングのハイパーパラメーターを最適化します。
 
 この演習の所要時間は約 **30** 分です。
 
@@ -93,9 +93,9 @@ Spark MLLib ライブラリを使って機械学習モデルをトレーニン�
 
     ```bash
     %sh
-    rm -r /dbfs/hyperopt_lab
-    mkdir /dbfs/hyperopt_lab
-    wget -O /dbfs/hyperopt_lab/penguins.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/penguins.csv
+    rm -r /dbfs/hyperparam_tune_lab
+    mkdir /dbfs/hyperparam_tune_lab
+    wget -O /dbfs/hyperparam_tune_lab/penguins.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/penguins.csv
     ```
 
 1. そのセルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行します。 その後、コードによって実行される Spark ジョブが完了するまで待ちます。
@@ -110,7 +110,7 @@ Spark MLLib ライブラリを使って機械学習モデルをトレーニン�
    from pyspark.sql.types import *
    from pyspark.sql.functions import *
    
-   data = spark.read.format("csv").option("header", "true").load("/hyperopt_lab/penguins.csv")
+   data = spark.read.format("csv").option("header", "true").load("/hyperparam_tune_lab/penguins.csv")
    data = data.dropna().select(col("Island").astype("string"),
                              col("CulmenLength").astype("float"),
                              col("CulmenDepth").astype("float"),
@@ -130,103 +130,73 @@ Spark MLLib ライブラリを使って機械学習モデルをトレーニン�
 
 最も可能性の高いラベルを計算するアルゴリズムに特徴を当てはめることによって、機械学習モデルをトレーニングします。 アルゴリズムはトレーニング データをパラメーターとして受け取り、特徴とラベルの間の数学的リレーションシップを計算しようとします。 データに加えて、ほとんどのアルゴリズムでは 1 つ以上の "ハイパーパラメーター" を使って、リレーションシップの計算方法に影響を与えます。最適なハイパーパラメーター値を決定することは、反復モデル トレーニング プロセスの重要な部分です。**
 
-最適なハイパーパラメーター値を決定できるように、Azure Databricks には **Hyperopt** のサポートが含まれています。これは、複数のハイパーパラメーター値を試して、データに最適な組み合わせを見つけることができるライブラリです。
+最適なハイパーパラメーター値の決定に役立つように、Azure Databricks では [**Optuna**](https://optuna.readthedocs.io/en/stable/index.html) をサポートしています。これは、複数のハイパーパラメーター値を試して、データに最適な組み合わせを見つけることができるライブラリです。
 
-Hyperopt を使う最初の手順は、次のような関数を作成することです。
+Optuna を使用する際は、まず次のような関数を作成します。
 
 - 関数にパラメーターとして渡される 1 つ以上のハイパーパラメーター値を使ってモデルをトレーニングします。
 - "損失" (モデルが完璧な予測パフォーマンスからどれだけ離れているか) を測定するために使用できるパフォーマンス メトリックを計算します**
 - さまざまなハイパーパラメーター値を試すことで繰り返し最適化 (最小化) できるように、損失値を返します
 
-1. 新しいセルを追加し、次のコードを利用して、その位置と測定値に基づいてペンギンの種類を予測する分類モデルにペンギン データを使って浴びせかける関数を作成します。
+1. 新しいセルを追加し、次のコードを使用して関数を作成します。この関数では、ハイパーパラメーターに使用する値の範囲を定義し、ペンギン データを使用して、ペンギンの場所と測定値に基づいてペンギンの種類を予測する分類モデルをトレーニングします。
 
     ```python
-   from hyperopt import STATUS_OK
-   import mlflow
+   import optuna
+   import mlflow # if you wish to log your experiments
    from pyspark.ml import Pipeline
    from pyspark.ml.feature import StringIndexer, VectorAssembler, MinMaxScaler
    from pyspark.ml.classification import DecisionTreeClassifier
    from pyspark.ml.evaluation import MulticlassClassificationEvaluator
    
-   def objective(params):
-       # Train a model using the provided hyperparameter value
-       catFeature = "Island"
-       numFeatures = ["CulmenLength", "CulmenDepth", "FlipperLength", "BodyMass"]
-       catIndexer = StringIndexer(inputCol=catFeature, outputCol=catFeature + "Idx")
-       numVector = VectorAssembler(inputCols=numFeatures, outputCol="numericFeatures")
-       numScaler = MinMaxScaler(inputCol = numVector.getOutputCol(), outputCol="normalizedFeatures")
-       featureVector = VectorAssembler(inputCols=["IslandIdx", "normalizedFeatures"], outputCol="Features")
-       mlAlgo = DecisionTreeClassifier(labelCol="Species",    
-                                       featuresCol="Features",
-                                       maxDepth=params['MaxDepth'], maxBins=params['MaxBins'])
-       pipeline = Pipeline(stages=[catIndexer, numVector, numScaler, featureVector, mlAlgo])
+   def objective(trial):
+       # Suggest hyperparameter values (maxDepth and maxBins):
+       max_depth = trial.suggest_int("MaxDepth", 0, 9)
+       max_bins = trial.suggest_categorical("MaxBins", [10, 20, 30])
+
+       # Define pipeline components
+       cat_feature = "Island"
+       num_features = ["CulmenLength", "CulmenDepth", "FlipperLength", "BodyMass"]
+       catIndexer = StringIndexer(inputCol=cat_feature, outputCol=cat_feature + "Idx")
+       numVector = VectorAssembler(inputCols=num_features, outputCol="numericFeatures")
+       numScaler = MinMaxScaler(inputCol=numVector.getOutputCol(), outputCol="normalizedFeatures")
+       featureVector = VectorAssembler(inputCols=[cat_feature + "Idx", "normalizedFeatures"], outputCol="Features")
+
+       dt = DecisionTreeClassifier(
+           labelCol="Species",
+           featuresCol="Features",
+           maxDepth=max_depth,
+           maxBins=max_bins
+       )
+
+       pipeline = Pipeline(stages=[catIndexer, numVector, numScaler, featureVector, dt])
        model = pipeline.fit(train)
-       
-       # Evaluate the model to get the target metric
-       prediction = model.transform(test)
-       eval = MulticlassClassificationEvaluator(labelCol="Species", predictionCol="prediction", metricName="accuracy")
-       accuracy = eval.evaluate(prediction)
-       
-       # Hyperopt tries to minimize the objective function, so you must return the negative accuracy.
-       return {'loss': -accuracy, 'status': STATUS_OK}
+
+       # Evaluate the model using accuracy.
+       predictions = model.transform(test)
+       evaluator = MulticlassClassificationEvaluator(
+           labelCol="Species",
+           predictionCol="prediction",
+           metricName="accuracy"
+       )
+       accuracy = evaluator.evaluate(predictions)
+
+       # Since Optuna minimizes the objective, return negative accuracy.
+       return -accuracy
     ```
 
-1. 新しいセルを追加し、以下のコードを使って次を行います。
-    - 1 つ以上のハイパーパラメーターに使われる値の範囲を指定する検索空間を定義します (詳細については、Hyperopt ドキュメントの「[Defining a Search Space (検索空間の定義)](http://hyperopt.github.io/hyperopt/getting-started/search_spaces/)」を参照してください)。
-    - 使用する Hyperopt アルゴリズムを指定します (詳細については、Hyperopt ドキュメントの「[Algorithms (アルゴリズム)](http://hyperopt.github.io/hyperopt/#algorithms)」を参照してください)。
-    - **hyperopt.fmin** 関数を使ってトレーニング関数を繰り返し呼び出し、損失を最小化するようにします。
+1. 新しいセルを追加し、次のコードを使用して最適化実験を実行します。
 
     ```python
-   from hyperopt import fmin, tpe, hp
-   
-   # Define a search space for two hyperparameters (maxDepth and maxBins)
-   search_space = {
-       'MaxDepth': hp.randint('MaxDepth', 10),
-       'MaxBins': hp.choice('MaxBins', [10, 20, 30])
-   }
-   
-   # Specify an algorithm for the hyperparameter optimization process
-   algo=tpe.suggest
-   
-   # Call the training function iteratively to find the optimal hyperparameter values
-   argmin = fmin(
-     fn=objective,
-     space=search_space,
-     algo=algo,
-     max_evals=6)
-   
-   print("Best param values: ", argmin)
+   # Optimization run with 5 trials:
+   study = optuna.create_study()
+   study.optimize(objective, n_trials=5)
+
+   print("Best param values from the optimization run:")
+   print(study.best_params)
     ```
 
-1. コードがトレーニング関数を (**max_evals** 設定に基づいて) 6 回繰り返し実行していることに注意してください。 各実行は MLflow によって記録され、**&#9656;** トグルを使って、コード セルの下にある **MLflow 実行**の出力を展開し、**実験**のハイパーリンクを選んで表示します。 各実行にはランダムな名前が割り当てられ、MLflow 実行ビューアーで各実行を表示して、記録されたパラメーターとメトリックの詳細を確認できます。
-1. すべての実行が完了すると、見つかった最適なハイパーパラメーター値 (損失が最小となる組み合わせ) の詳細がコードに表示されることを確認します。 この場合、**MaxBins** パラメーターは、3 つの指定できる値 (10、20、30) の一覧からの選択肢として定義されます。最良の値は、一覧内の 0 から始まる項目を示します (つまり、0=10、1=20、2=30)。 **MaxDepth** パラメーターは 0 から 10 のランダムな整数として定義され、最良の結果をもたらした整数値が表示されます。 検索空間のハイパーパラメーター値スコープの指定の詳細については、Hyperopt ドキュメントの「[Parameter Expressions (パラメーター式)](http://hyperopt.github.io/hyperopt/getting-started/search_spaces/#parameter-expressions)」を参照してください。
-
-## Trials クラスを使って実行の詳細をログする
-
-MLflow 実験の実行を使って各イテレーションの詳細をログするだけでなく、**hyperopt.Trials** クラスを使って各実行の詳細を記録および表示することもできます。
-
-1. 新しいセルを追加し、次のコードを使って、**Trials** クラスによって記録された各実行の詳細を表示します。
-
-    ```python
-   from hyperopt import Trials
-   
-   # Create a Trials object to track each run
-   trial_runs = Trials()
-   
-   argmin = fmin(
-     fn=objective,
-     space=search_space,
-     algo=algo,
-     max_evals=3,
-     trials=trial_runs)
-   
-   print("Best param values: ", argmin)
-   
-   # Get details from each trial run
-   print ("trials:")
-   for trial in trial_runs.trials:
-       print ("\n", trial)
-    ```
+1. このコードは、損失を最小限に抑えるためにトレーニング関数を 5 回繰り返し実行することに注目してください (試行回数は **n_trials** 設定に基づきます)。 各試行は MLflow で記録されているので、**&#9656;** トグルを使用して、コード セル下の **MLflow 実行**の出力を展開し、**実験**のハイパーリンクを選択して結果を確認できます。 各実行にはランダムな名前が割り当てられ、MLflow 実行ビューアーで各実行を表示して、記録されたパラメーターとメトリックの詳細を確認できます。
+1. すべての実行が完了すると、見つかった最適なハイパーパラメーター値 (損失が最小となる組み合わせ) の詳細がコードに表示されることを確認します。 この場合、**MaxBins** パラメーターは、3 つの指定できる値 (10、20、30) の一覧からの選択肢として定義されます。最良の値は、一覧内の 0 から始まる項目を示します (つまり、0=10、1=20、2=30)。 **MaxDepth** パラメーターは 0 から 10 のランダムな整数として定義され、最良の結果をもたらした整数値が表示されます。 
 
 ## クリーンアップ
 
