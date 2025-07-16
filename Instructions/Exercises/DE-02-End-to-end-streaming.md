@@ -84,7 +84,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     %sh
     rm -r /dbfs/device_stream
     mkdir /dbfs/device_stream
-    wget -O /dbfs/device_stream/device_data.csv https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/device_data.csv
+    !wget -O /dbfs/device_stream/device_data.csv https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/device_data.csv
      ```
 
 4. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。

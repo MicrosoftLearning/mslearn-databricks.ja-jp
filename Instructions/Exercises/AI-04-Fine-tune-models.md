@@ -142,7 +142,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     os.environ["TEMP_AUTH_TOKEN"] = "your_access_token"
      ```
      
-## 有効性トークン数
+## トークン数を検証する
 
 `training_set.jsonl` と `validation_set.jsonl` はどちらも、微調整されたモデルをトレーニングおよび検証するためのデータ ポイントとして機能する、`user` と `assistant` の間でのさまざまな会話の例で構成されています。 個々の例は、`gpt-35-turbo` モデルの入力トークン制限である 4096 トークン以下に留める必要があります。
 
