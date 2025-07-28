@@ -1,9 +1,9 @@
 ---
 lab:
-  title: Azure Databricks を使用した LLMOps の実装
+  title: Azure Databricks で LLMOps を実装する
 ---
 
-# Azure Databricks を使用した LLMOps の実装
+# Azure Databricks で LLMOps を実装する
 
 Azure Databricks は、データの準備からモデルの提供と監視まで、AI ライフサイクルを合理化し、機械学習システムのパフォーマンスと効率を最適化する統合プラットフォームを提供します。 データ ガバナンス用の Unity カタログ、モデル追跡用の MLflow、LLM をデプロイするための Mosaic AI Model Serving などの機能を利用して、生成 AI アプリケーションの開発をサポートします。
 

@@ -45,13 +45,13 @@ lab:
 
 6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
 
-7. スクリプトが完了するまで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの[Delta Lake の概要](https://docs.microsoft.com/azure/databricks/delta/delta-intro)に関する記事をご確認ください。
+7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。
 
 ## クラスターの作成
 
 Azure Databricks は、Apache Spark "クラスター" を使用して複数のノードでデータを並列に処理する分散処理プラットフォームです。** 各クラスターは、作業を調整するドライバー ノードと、処理タスクを実行するワーカー ノードで構成されています。 この演習では、ラボ環境で使用されるコンピューティング リソース (リソースが制約される場合がある) を最小限に抑えるために、*単一ノード* クラスターを作成します。 運用環境では、通常、複数のワーカー ノードを含むクラスターを作成します。
 
-> **ヒント**: Azure Databricks ワークスペースに 13.3 LTS **<u>ML</u>** 以降のランタイム バージョンを備えたクラスターが既にある場合は、この手順をスキップし、そのクラスターを使用してこの演習を完了できます。
+> **ヒント**: Azure Databricks ワークスペースに 15.4 LTS **<u>ML</u>** 以降のランタイム バージョンを備えたクラスターが既にある場合は、それを使ってこの演習を完了し、この手順をスキップできます。
 
 1. Azure portal で、スクリプトによって作成された **msl-*xxxxxxx*** リソース グループ (または既存の Azure Databricks ワークスペースを含むリソース グループ) に移動します
 1. Azure Databricks Service リソース (セットアップ スクリプトを使って作成した場合は、**databricks-*xxxxxxx*** という名前) を選択します。
@@ -63,15 +63,11 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 1. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
     - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
     - **ポリシー**:Unrestricted
-    - **クラスター モード**: 単一ノード
-    - **アクセス モード**: 単一ユーザー (*自分のユーザー アカウントを選択*)
-    - **Databricks Runtime のバージョン**: "以下に該当する最新の非ベータ版ランタイム (標準ランタイム バージョン**ではない***) の **<u>ML</u>** エディションを選択します。"
-        - "*GPU を使用**しない***"
-        - *Scala > **2.11** を含める*
-        - "**3.4** 以上の Spark を含む"**
+    - **機械学習**: 有効
+    - **Databricks Runtime**:15.4 LTS
     - **Photon Acceleration を使用する**: <u>オフ</u>にする
-    - **ノード タイプ**: Standard_D4ds_v5
-    - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
+    - **worker の種類**:Standard_D4ds_v5
+    - **単一ノード**:オン
 
 1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
 
@@ -83,7 +79,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 2. **[新規インストール]** を選択します。
 
-3. ライブラリ ソースとして **[PyPI]** を選択し、**"パッケージ"** フィールドに「`transformers==4.44.0`」と入力します。
+3. ライブラリ ソースとして **[PyPI]** を選択し、**"パッケージ"** フィールドに「`transformers==4.53.0`」と入力します。
 
 4. **[インストール]** を選択します。
 
@@ -93,26 +89,29 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 2. **[作成]** を選択し、**[ノートブック]** を選択します。
 
-3. ノートブックに名前を付け、言語として [`Python`] を選択します。
+3. ノートブックに名前を付け、言語として `Python` が選択されていることを確認します。
 
-4. 最初のコード セルに、次のコードを入力して実行します。
+4. **[接続]** ドロップダウン メニューで、前に作成したコンピューティング リソースを選択します。
 
-     ```python
-    from transformers import pipeline
+5. 最初のコード セルに、次のコードを入力して実行します。
 
-    # Load the summarization model
-    summarizer = pipeline("summarization")
+    ```python
+   from transformers import pipeline
 
-    # Load the sentiment analysis model
-    sentiment_analyzer = pipeline("sentiment-analysis")
+   # Load the summarization model with PyTorch weights
+   summarizer = pipeline("summarization", model="facebook/bart-large-cnn", framework="pt")
 
-    # Load the translation model
-    translator = pipeline("translation_en_to_fr")
+   # Load the sentiment analysis model
+   sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert/distilbert-base-uncased-finetuned-sst-2-english", revision="714eb0f")
 
-    # Load a general purpose model for zero-shot classification and few-shot learning
-    classifier = pipeline("zero-shot-classification")
-     ```
-これにより、この演習で示す NLP タスクに必要なすべてのモデルが読み込まれます。
+   # Load the translation model
+   translator = pipeline("translation_en_to_fr", model="google-t5/t5-base", revision="a9723ea")
+
+   # Load a general purpose model for zero-shot classification and few-shot learning
+   classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli", revision="d7645e1") 
+    ```
+     
+    これにより、この演習で示す NLP タスクに必要なすべてのモデルが読み込まれます。
 
 ### テキストの要約
 
