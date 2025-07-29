@@ -32,26 +32,26 @@ lab:
 
 4. PowerShell のペインで、次のコマンドを入力して、リポジトリを複製します。
 
-     ```powershell
-    rm -r mslearn-databricks -f
-    git clone https://github.com/MicrosoftLearning/mslearn-databricks
-     ```
+    ```powershell
+   rm -r mslearn-databricks -f
+   git clone https://github.com/MicrosoftLearning/mslearn-databricks
+    ```
 
 5. リポジトリをクローンした後、次のコマンドを入力して **setup.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
 
-     ```powershell
-    ./mslearn-databricks/setup.ps1
-     ```
+    ```powershell
+   ./mslearn-databricks/setup.ps1
+    ```
 
 6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
 
-7. スクリプトが完了するまで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの[Delta Lake の概要](https://docs.microsoft.com/azure/databricks/delta/delta-intro)に関する記事をご確認ください。
+7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。
 
 ## クラスターの作成
 
 Azure Databricks は、Apache Spark "クラスター" を使用して複数のノードでデータを並列に処理する分散処理プラットフォームです。** 各クラスターは、作業を調整するドライバー ノードと、処理タスクを実行するワーカー ノードで構成されています。 この演習では、ラボ環境で使用されるコンピューティング リソース (リソースが制約される場合がある) を最小限に抑えるために、*単一ノード* クラスターを作成します。 運用環境では、通常、複数のワーカー ノードを含むクラスターを作成します。
 
-> **ヒント**: Azure Databricks ワークスペースに 13.3 LTS **<u>ML</u>** 以降のランタイム バージョンを備えたクラスターが既にある場合は、この手順をスキップし、そのクラスターを使用してこの演習を完了できます。
+> **ヒント**: Azure Databricks ワークスペースに 15.4 LTS **<u>ML</u>** 以降のランタイム バージョンを備えたクラスターが既にある場合は、それを使ってこの演習を完了し、この手順をスキップできます。
 
 1. Azure portal で、スクリプトによって作成された **msl-*xxxxxxx*** リソース グループ (または既存の Azure Databricks ワークスペースを含むリソース グループ) に移動します
 1. Azure Databricks Service リソース (セットアップ スクリプトを使って作成した場合は、**databricks-*xxxxxxx*** という名前) を選択します。
@@ -63,15 +63,11 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 1. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
     - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
     - **ポリシー**:Unrestricted
-    - **クラスター モード**: 単一ノード
-    - **アクセス モード**: 単一ユーザー (*自分のユーザー アカウントを選択*)
-    - **Databricks Runtime のバージョン**: "以下に該当する最新の非ベータ版ランタイム (標準ランタイム バージョン**ではない***) の **<u>ML</u>** エディションを選択します。"
-        - "*GPU を使用**しない***"
-        - *Scala > **2.11** を含める*
-        - "**3.4** 以上の Spark を含む"**
+    - **機械学習**: 有効
+    - **Databricks Runtime**:15.4 LTS
     - **Photon Acceleration を使用する**: <u>オフ</u>にする
-    - **ノード タイプ**: Standard_D4ds_v5
-    - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
+    - **ワーカー タイプ**:Standard_D4ds_v5
+    - **シングル ノード**:オン
 
 1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
 
@@ -79,170 +75,151 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 ## 必要なライブラリをインストールする
 
-1. クラスターのページで、**[ライブラリ]** タブを選択します。
-
-2. **[新規インストール]** を選択します。
-
-3. ライブラリ ソースとして **[PyPI]** を選択し、**"パッケージ"** フィールドに「`transformers==4.44.0`」と入力します。
-
-4. **[インストール]** を選択します。
-
-5. 上記の手順を繰り返して、`databricks-vectorsearch==0.40`もインストールします。
-   
-## ノートブックを作成してデータを取り込む
-
 1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 **[接続]** ドロップダウン リストで、まだ選択されていない場合はクラスターを選択します。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
+1. 最初のコード セルに、次のコードを入力して実行し、必要なライブラリをインストールします。
+   
+    ```python
+   %pip install faiss-cpu
+   dbutils.library.restartPython()
+    ```
+   
+## データを取り込む
 
-2. ノートブックの最初のセルに次のコードを入力します。このコードは、"シェル" コマンドを使用して、GitHub からクラスターで使用されるファイル システムにデータ ファイルをダウンロードします。**
+1. 新しいブラウザー タブで、この演習でデータとして使用する[サンプル ファイル](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/enwiki-latest-pages-articles.xml) (`https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/enwiki-latest-pages-articles.xml`) をダウンロードします。
+1. Databricks ワークスペース タブに戻り、ノートブックを開いた状態で、**カタログ (Ctrl + Alt + C)** エクスプローラーを選択し、➕ アイコンを選択して**データを追加**します。
+1. **[データの追加]** ページで、**[DBFS にファイルをアップロードする]** を選択します。
+1. **[DBFS]** ページで、ターゲット ディレクトリ `RAG_lab` に名前を付け、前に保存した.xml ファイルをアップロードします。
+1. サイドバーで **[ワークスペース]** を選択し、ノートブックをもう一度開きます。
+1. 新しいコード セルで、次のコードを実行して、生データからデータフレームを作成します。
 
-     ```python
-    %sh
-    rm -r /dbfs/RAG_lab
-    mkdir /dbfs/RAG_lab
-    wget -O /dbfs/RAG_lab/enwiki-latest-pages-articles.xml https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/enwiki-latest-pages-articles.xml
-     ```
+    ```python
+   from pyspark.sql import SparkSession
 
-3. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
+   # Create a Spark session
+   spark = SparkSession.builder \
+       .appName("RAG-DataPrep") \
+       .getOrCreate()
 
-4. 新しいセルで、次のコードを実行して、生データからデータフレームを作成します。
+   # Read the XML file
+   raw_df = spark.read.format("xml") \
+       .option("rowTag", "page") \
+       .load("/FileStore/tables/RAG_lab/enwiki_latest_pages_articles.xml")
 
-     ```python
-    from pyspark.sql import SparkSession
+   # Show the DataFrame
+   raw_df.show(5)
 
-    # Create a Spark session
-    spark = SparkSession.builder \
-        .appName("RAG-DataPrep") \
-        .getOrCreate()
+   # Print the schema of the DataFrame
+   raw_df.printSchema()
+    ```
 
-    # Read the XML file
-    raw_df = spark.read.format("xml") \
-        .option("rowTag", "page") \
-        .load("/RAG_lab/enwiki-latest-pages-articles.xml")
+1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
+1. 新しいセルで、次のコードを実行してデータをクリーンして前処理し、関連するテキスト フィールドを抽出します。
 
-    # Show the DataFrame
-    raw_df.show(5)
+    ```python
+   from pyspark.sql.functions import col
 
-    # Print the schema of the DataFrame
-    raw_df.printSchema()
-     ```
-
-5. 新しいセルで、次のコードを実行し、`<catalog_name>` を Unity カタログの名前 (カタログはワークスペースの名前と一意のサフィックス) に置き換えて、データをクリーンにして前処理し、関連するテキスト フィールドを抽出します。
-
-     ```python
-    from pyspark.sql.functions import col
-
-    clean_df = raw_df.select(col("title"), col("revision.text._VALUE").alias("text"))
-    clean_df = clean_df.na.drop()
-    clean_df.write.format("delta").mode("overwrite").saveAsTable("<catalog_name>.default.wiki_pages")
-    clean_df.show(5)
-     ```
-
-**カタログ (Ctrl + Alt + C)** エクスプローラーを開いてペインを更新すると、既定の Unity カタログに Delta テーブルが作成されます。
+   clean_df = raw_df.select(col("title"), col("revision.text._VALUE").alias("text"))
+   clean_df = clean_df.na.drop()
+   clean_df.show(5)
+    ```
 
 ## 埋め込みを生成し、ベクトル検索を実装する
 
-Databricks の Mosaic AI ベクトル検索は、Azure Databricks プラットフォーム内に統合されたベクトル データベース ソリューションです。 Hierarchical Navigable Small World (HNSW) アルゴリズムを使用して、埋め込みのストレージと取得を最適化します。 これにより、効率的な最近隣検索が可能になり、そのハイブリッド キーワード類似性検索機能は、ベクトル ベースとキーワード ベースの検索手法を組み合わせることにより、より関連性の高い結果を提供します。
+FAISS (Facebook AI Similarity Search) は、Meta AI によって開発されたオープンソース ベクトル データベース ライブラリであり、高密度ベクトルの効率的な類似性検索とクラスタリング向けに設計されています。 FAISS を使用すると、ニアレストネイバー検索をすばやくスケーラブルに行うことができます。また、ハイブリッド検索システムと統合して、ベクトル ベースの類似性と従来のキーワード ベースの手法を組み合わせ、検索結果の関連性を高めることができます。
 
-1. 新しいセルで、差分同期インデックスを作成する前に、次の SQL クエリを実行してソース テーブルのデータ フィードの変更機能を有効にします。
+1. 新しいセルで、次のコードを実行して事前トレーニング済みの `all-MiniLM-L6-v2` モデルを読み込み、テキストを埋め込みに変換します。
 
-     ```python
-    %sql
-    ALTER TABLE <catalog_name>.default.wiki_pages SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
-     ```
+    ```python
+   from sentence_transformers import SentenceTransformer
+   import numpy as np
+    
+   # Load pre-trained model
+   model = SentenceTransformer('all-MiniLM-L6-v2')
+    
+   # Function to convert text to embeddings
+   def text_to_embedding(text):
+       embeddings = model.encode([text])
+       return embeddings[0]
+    
+   # Convert the DataFrame to a Pandas DataFrame
+   pandas_df = clean_df.toPandas()
+    
+   # Apply the function to get embeddings
+   pandas_df['embedding'] = pandas_df['text'].apply(text_to_embedding)
+   embeddings = np.vstack(pandas_df['embedding'].values)
+    ```
 
-2. 新しいセルで、次のコードを実行して、ベクトル検索インデックスを作成します。
+1. 新しいセルで、次のコードを実行して FAISS インデックスを作成し、クエリを実行します。
 
-     ```python
-    from databricks.vector_search.client import VectorSearchClient
-
-    client = VectorSearchClient()
-
-    client.create_endpoint(
-        name="vector_search_endpoint",
-        endpoint_type="STANDARD"
-    )
-
-    index = client.create_delta_sync_index(
-      endpoint_name="vector_search_endpoint",
-      source_table_name="<catalog_name>.default.wiki_pages",
-      index_name="<catalog_name>.default.wiki_index",
-      pipeline_type="TRIGGERED",
-      primary_key="title",
-      embedding_source_column="text",
-      embedding_model_endpoint_name="databricks-gte-large-en"
-     )
-     ```
-     
-**カタログ (Ctrl + Alt + C)** エクスプローラーを開いてペインを更新すると、既定の Unity カタログにインデックスが作成されます。
-
-> **注:** 次のコード セルを実行する前に、インデックスが正常に作成されたことを確認します。 これを行うには、[カタログ] ペインでインデックスを右クリックし、**[カタログ エクスプローラーで開く]** を選択します。 インデックスの状態が **[オンライン]** になるまで待ちます。
-
-3. 新しいセルで、次のコードを実行して、クエリ ベクトルに基づいて関連するドキュメントを検索します。
-
-     ```python
-    results_dict=index.similarity_search(
-        query_text="Anthropology fields",
-        columns=["title", "text"],
-        num_results=1
-    )
-
-    display(results_dict)
-     ```
+    ```python
+   import faiss
+    
+   # Create a FAISS index
+   d = embeddings.shape[1]  # dimension
+   index = faiss.IndexFlatL2(d)  # L2 distance
+   index.add(embeddings)  # add vectors to the index
+    
+   # Perform a search
+   query_embedding = text_to_embedding("Anthropology fields")
+   k = 1  # number of nearest neighbors
+   distances, indices = index.search(np.array([query_embedding]), k)
+    
+   # Get the results
+   results = pandas_df.iloc[indices[0]]
+   display(results)
+    ```
 
 出力で、クエリ プロンプトに関連する対応する Wiki ページが見つかることを確認します。
 
-## 取得したデータを使用してプロンプトを拡張する:
+## 取得したデータを使用してプロンプトを拡張する
 
 これで、外部データ ソースからの追加のコンテキストを提供することで、大規模言語モデルの機能を強化できるようになりました。 そうすることで、モデルはより正確でコンテキストに関連する応答を生成できます。
 
 1. 新しいセルで、次のコードを実行して、取得したデータをユーザーのクエリと組み合わせて、LLM のリッチ プロンプトを作成します。
 
-     ```python
-    # Convert the dictionary to a DataFrame
-    results = spark.createDataFrame([results_dict['result']['data_array'][0]])
+    ```python
+   from transformers import pipeline
+    
+   # Load the summarization model
+   summarizer = pipeline("summarization", model="facebook/bart-large-cnn", framework="pt")
+    
+   # Extract the string values from the DataFrame column
+   text_data = results["text"].tolist()
+    
+   # Pass the extracted text data to the summarizer function
+   summary = summarizer(text_data, max_length=512, min_length=100, do_sample=True)
+    
+   def augment_prompt(query_text):
+       context = " ".join([item['summary_text'] for item in summary])
+       return f"{context}\n\nQuestion: {query_text}\nAnswer:"
+    
+   prompt = augment_prompt("Explain the significance of Anthropology")
+   print(prompt)
+    ```
 
-    from transformers import pipeline
+1. 新しいセルで、次のコードを実行して、LLM を使用して応答を生成します。
 
-    # Load the summarization model
-    summarizer = pipeline("summarization")
+    ```python
+   from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-    # Extract the string values from the DataFrame column
-    text_data = results.select("_2").rdd.flatMap(lambda x: x).collect()
+   tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+   model = GPT2LMHeadModel.from_pretrained("gpt2")
 
-    # Pass the extracted text data to the summarizer function
-    summary = summarizer(text_data, max_length=512, min_length=100, do_sample=True)
+   inputs = tokenizer(prompt, return_tensors="pt")
+   outputs = model.generate(
+       inputs["input_ids"], 
+       max_length=300, 
+       num_return_sequences=1, 
+       repetition_penalty=2.0, 
+       top_k=50, 
+       top_p=0.95, 
+       temperature=0.7,
+       do_sample=True
+   )
+   response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-    def augment_prompt(query_text):
-        context = " ".join([item['summary_text'] for item in summary])
-        return f"Query: {query_text}\nContext: {context}"
-
-    prompt = augment_prompt("Explain the significance of Anthropology")
-    print(prompt)
-     ```
-
-3. 新しいセルで、次のコードを実行して、LLM を使用して応答を生成します。
-
-     ```python
-    from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    model = GPT2LMHeadModel.from_pretrained("gpt2")
-
-    inputs = tokenizer(prompt, return_tensors="pt")
-    outputs = model.generate(
-        inputs["input_ids"], 
-        max_length=300, 
-        num_return_sequences=1, 
-        repetition_penalty=2.0, 
-        top_k=50, 
-        top_p=0.95, 
-        temperature=0.7,
-        do_sample=True
-    )
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-    print(response)
-     ```
+   print(response)
+    ```
 
 ## クリーンアップ
 
