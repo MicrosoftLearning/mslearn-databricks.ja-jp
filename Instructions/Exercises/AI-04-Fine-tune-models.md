@@ -253,13 +253,15 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    fine_tuned_model = response.fine_tuned_model
     ```
 
+4. json 応答を確認し、`"fine_tuned_model"` フィールドに生成された一意の名前をメモします。 これは、次の省略可能なタスクで使用されます。
+
     >**注**:モデルの微調整には 60 分以上かかる場合があるため、この時点で演習を完了し、時間に余裕がある場合は、モデルのデプロイをオプションのタスクと考えることができます。
 
 ## [省略可能] 微調整されたモデルをデプロイする
 
 これで微調整されたモデルができたので、カスタマイズしたモデルとしてデプロイし、Azure AI Foundry の**チャット** プレイグラウンド、またはチャット補完 API のいずれかを使用して、他のデプロイ済みモデルと同様に使用できます。
 
-1. 新しいセルで次のコードを実行して、微調整されたモデルをデプロイし、プレースホルダー `<YOUR_SUBSCRIPTION_ID>`、`<YOUR_RESOURCE_GROUP_NAME>`、`<YOUR_AZURE_OPENAI_RESOURCE_NAME>` を置き換えます。
+1. 新しいセルで次のコードを実行し、プレースホルダー `<YOUR_SUBSCRIPTION_ID>`、`<YOUR_RESOURCE_GROUP_NAME>`、`<YOUR_AZURE_OPENAI_RESOURCE_NAME>`、`<FINE_TUNED_MODEL>` を置き換えて、微調整されたモデルをデプロイします。
    
     ```python
    import json
@@ -279,7 +281,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
        "properties": {
            "model": {
                "format": "OpenAI",
-               "name": "gpt-4o-ft",
+               "name": "<FINE_TUNED_MODEL>",
                "version": "1"
            }
        }
@@ -323,7 +325,9 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
    print(response.choices[0].message.content)
     ```
- 
+
+>**注**:微調整されたモデル デプロイが完了するまでに数分かかる場合があります。 Azure AI Foundry の **[Deployments]** ページで確認できます。
+
 ## クリーンアップ
 
 Azure OpenAI リソースでの作業が完了したら、**Azure portal** (`https://portal.azure.com`) でデプロイまたはリソース全体を忘れずに削除します。
