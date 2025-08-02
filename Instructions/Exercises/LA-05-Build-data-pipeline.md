@@ -159,7 +159,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 1. パイプラインが正常に実行された後、最近作成した *[Delta Live Tables を使用してパイプラインを作成]* ノートブックに戻り、新しいセルで以下のコードを実行して、3つの新しいテーブルのファイルが指定された保存場所に作成されたことを確認します：
 
      ```python
-    display(dbutils.fs.ls("dbfs:/pipelines/delta_lab/tables"))
+    display(dbutils.fs.ls("dbfs:/pipelines/delta_lab/schemas/default/tables"))
      ```
 
 1. 別のコード セルを追加し、次のコードを実行して、テーブルが **デフォルト** データベースに作成されていることを確認します。

@@ -20,14 +20,29 @@ Azure Databricks の*ワークスペース*は、Azure 上の Databricks クラ�
 > **ヒント**: 既に Azure Databricks ワークスペースがある場合は、この手順をスキップして、既存のワークスペースを使用できます。
 
 1. **Azure portal** (`https://portal.azure.com`) にサインインします。
-2. 次の設定で **Azure Databricks** リソースを作成します。
-    - **[サブスクリプション]**: *Azure サブスクリプションを選択します*
-    - **リソース グループ**: *`msl-xxxxxxx` という名前の新しいリソース グループを作成します ("xxxxxxx" は一意の値です)*
-    - **リージョン**: *使用可能なリージョンを選択します*
-    - **名前**: `databricks-xxxxxxx`*(ここで、"xxxxxxx" は一意の値です)*
-    - **価格レベル**: *Premium* または*試用版*
+2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。***PowerShell*** 環境を選択します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
 
-3. **[確認および作成]** を選択し、デプロイが完了するまで待ちます。 次にリソースに移動し、ワークスペースを起動します。
+    ![Azure portal と Cloud Shell のペイン](./images/cloud-shell.png)
+
+    > **注**: *Bash* 環境を使用するクラウド シェルを以前に作成した場合は、それを ***PowerShell*** に切り替えます。
+
+3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#10530;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
+
+4. PowerShell のペインで、次のコマンドを入力して、リポジトリを複製します。
+
+    ```
+    rm -r mslearn-databricks -f
+    git clone https://github.com/MicrosoftLearning/mslearn-databricks
+    ```
+
+5. リポジトリをクローンした後、次のコマンドを入力して **setup.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
+
+    ```
+    ./mslearn-databricks/setup.ps1
+    ```
+
+6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
+7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの記事「[Azure Databricks での探索的データ分析](https://learn.microsoft.com/azure/databricks/exploratory-data-analysis/)」を確認してください。
 
 ## クラスターの作成
 
