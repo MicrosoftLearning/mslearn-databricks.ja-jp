@@ -119,7 +119,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 1. 最初のコード セルに、次のコードを入力して実行し、必要なライブラリをインストールします。
    
     ```python
-   %pip install langchain openai langchain_openai faiss-cpu
+   %pip install langchain openai langchain_openai langchain-community faiss-cpu
     ```
 
 1. インストールが完了したら、新しいセルでカーネルを再起動します。
