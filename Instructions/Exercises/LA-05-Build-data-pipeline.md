@@ -1,15 +1,17 @@
 ---
 lab:
-  title: Delta Live Tables を使用してデータ パイプラインを作成する
+  title: Lakeflow 宣言型パイプラインを作成する
 ---
 
-# Delta Live Tables を使用してデータ パイプラインを作成する
+# Lakeflow 宣言型パイプラインを作成する
 
-Delta Live Tables は、信頼性、保守性、テスト可能性に優れたデータ処理パイプラインを構築するための宣言型フレームワークです。 パイプラインは、Delta Live Tables でデータ処理ワークフローの構成と実行に使用されるメイン ユニットです。 Python または SQL で宣言された有向非巡回グラフ (DAG) を使用して、データ ソースをターゲット データセットにリンクします。
+Lakeflow 宣言型パイプラインは、**宣言型**の方法でデータ パイプラインを構築および実行するための Databricks Lakehouse Platform 内のフレームワークです。 つまり、実現したいデータ変換を指定すると、システムはそれらの変換を効率的に実行する方法を自動的に判断し、従来の Data Engineering の複雑さの多くを処理します。
+
+Lakeflow 宣言型パイプラインは、複雑でローレベルな詳細を抽象化することで、ETL (抽出、変換、読み込み) パイプラインの開発を簡略化します。 すべてのステップを指示する手続き型コードを記述する代わりに、SQL または Python で、より単純な宣言型構文を使用します。
 
 このラボは完了するまで、約 **40** 分かかります。
 
-> **注**: Azure Databricks ユーザー インターフェイスは継続的な改善の対象となります。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている場合があります。
+> **注**: Azure Databricks ユーザー インターフェイスは継続的な改善の対象となります。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている場合があります。 Lakeflow 宣言型パイプラインは Databricks の Delta Live Tables (DLT) の進化であり、バッチ ワークロードとストリーミング ワークロードの両方に統一されたアプローチを提供します。
 
 ## Azure Databricks ワークスペースをプロビジョニングする
 
@@ -41,7 +43,7 @@ Delta Live Tables は、信頼性、保守性、テスト可能性に優れた�
 
 6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
 
-7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間、Azure Databricks ドキュメントの記事「[Databricks SQL とは](https://learn.microsoft.com/azure/databricks/delta-live-tables/)」を確認してください。
+7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 お待ちいただく間に、Azure Databricks ドキュメントの [Lakeflow 宣言型パイプライン](https://learn.microsoft.com/azure/databricks/dlt/)の記事をご確認ください。
 
 ## クラスターの作成
 
@@ -77,7 +79,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。
 
-2. 既定のノートブック名 (**無題のノートブック *[日付]***) を「`Create a pipeline with Delta Live tables`」に変更し、**[接続]** ドロップダウン リストでクラスターを選択します (まだ選択されていない場合)。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
+2. 既定のノートブック名 (**無題のノートブック *[日付]***) を「`Data Ingestion and Exploration`」に変更し、**[接続]** ドロップダウン リストでクラスターを選択します (まだ選択されていない場合)。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
 
 3. ノートブックの最初のセルに次のコードを入力します。このコードは、"シェル" コマンドを使用して、GitHub からクラスターで使用されるファイル システムにデータ ファイルをダウンロードします。**
 
@@ -90,16 +92,16 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 4. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
 
-## SQL を使用して Delta Live Tables パイプラインを作成する
+## SQL を使用して Lakeflow 宣言型パイプラインを作成する
 
-1. 新しいノートブックを作成し、名前を[`Pipeline Notebook`]に変更します。
+1. 新しいノートブックを作成し、名前を[`Covid Pipeline Notebook`]に変更します。
 
 1. ノートブックの名前の横にある **Python** を選択し、既定の言語を **SQL** に変更します。
 
-1. 最初のセルに次のコードを実行せずに配置します。 すべてのセルは、パイプラインの作成後に実行されます。 このコードでは、以前ダウンロードした生データによって設定される Delta Live Table を定義します。
+1. 最初のセルに次のコードを*実行せずに*入力します。 すべてのセルは、パイプラインの作成後に実行されます。 このコードは、以前ダウンロードした生データによって設定されるマテリアライズド ビューを定義します。
 
      ```sql
-    CREATE OR REFRESH LIVE TABLE raw_covid_data
+    CREATE OR REFRESH MATERIALIZED VIEW raw_covid_data
     COMMENT "COVID sample dataset. This data was ingested from the COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University."
     AS
     SELECT
@@ -114,7 +116,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 1. 最初のセルの下で、**+ コード** アイコンを使用して新しいセルを追加し、分析前に前のテーブルのデータのクエリ、フィルター処理、およびフォーマットを行う次のコードを入力します。
 
      ```sql
-    CREATE OR REFRESH LIVE TABLE processed_covid_data(
+    CREATE OR REFRESH MATERIALIZED VIEW processed_covid_data(
       CONSTRAINT valid_country_region EXPECT (Country_Region IS NOT NULL) ON VIOLATION FAIL UPDATE
     )
     COMMENT "Formatted and filtered data for analysis."
@@ -131,7 +133,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 1. 3 番目の新しいコード セルに次のコードを入力します。これにより、パイプラインが正常に実行された後にさらに分析するための強化されたデータ ビューが作成されます。
 
      ```sql
-    CREATE OR REFRESH LIVE TABLE aggregated_covid_data
+    CREATE OR REFRESH MATERIALIZED VIEW aggregated_covid_data
     COMMENT "Aggregated daily data for the US with total counts."
     AS
     SELECT
@@ -143,20 +145,20 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
     GROUP BY Report_Date;
      ```
      
-1. 左側のサイドバーで **Delta Live Tables** を選択し、 **[パイプラインの作成]** を選択します。
+1. 左側のサイドバーで **[ジョブとパイプライン]** を選択し、**[ETL パイプライン]** を選択します。
 
 1. **[パイプラインの作成**] ページで、次の設定を使用して新しいパイプラインを作成します。
     - **パイプライン名**: `Covid Pipeline`
     - **製品エディション**: 詳細
     - **パイプライン モード**: トリガー
-    - **ソース コード**: *フォルダー*内のパイプライン ノートブック*ノートブックを参照します*Users/user@name *。*
+    - **ソース コード**:Users/user@name * フォルダー*で、Covid パイプライン ノートブック* ノートブックを**参照します*。
     - **ストレージ オプション**: Hive メタストア
     - **保存場所**: `dbfs:/pipelines/delta_lab`
     - **ターゲット スキーマ**: *入力する*`default`
 
 1. **[作成]** を選択して、**[開始]** を選択します。 次に、パイプラインが実行されるまで待機します (時間がかかる場合があります)。
  
-1. パイプラインが正常に実行された後、最近作成した *[Delta Live Tables を使用してパイプラインを作成]* ノートブックに戻り、新しいセルで以下のコードを実行して、3つの新しいテーブルのファイルが指定された保存場所に作成されたことを確認します：
+1. パイプラインが正常に実行された後、最近作成した *[データ インジェストと探索]* ノートブックに戻り、新しいセルで以下のコードを実行して、3 つの新しいテーブルのファイルが指定された保存場所に作成されたことを確認します。
 
      ```python
     display(dbutils.fs.ls("dbfs:/pipelines/delta_lab/schemas/default/tables"))
@@ -174,7 +176,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 テーブルを作成した後、テーブルをデータフレームに読み込み、データを視覚化することができます。
 
-1. *[Delta Live Tables を使用してパイプラインを作成]* ノートブックで、新しいコード セルを追加し、次のコードを実行して `aggregated_covid_data` をデータフレームに読み込みます。
+1. *[データ インジェストと探索]* ノートブックで、新しいコード セルを追加し、次のコードを実行して `aggregated_covid_data` をデータフレームに読み込みます。
 
     ```sql
     %sql
