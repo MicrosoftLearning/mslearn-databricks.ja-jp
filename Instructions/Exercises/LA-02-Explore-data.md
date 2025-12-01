@@ -22,87 +22,91 @@ Azure Databricks を使用すると、探索的データ分析 (EDA) が容易�
 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、[Azure portal で、Azure Databricks ワークスペースを対話形式で作成](https://learn.microsoft.com/azure/databricks/getting-started/#--create-an-azure-databricks-workspace)してみてください。
 
 1. Web ブラウザーで、`https://portal.azure.com` の [Azure portal](https://portal.azure.com) にサインインします。
-2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。***PowerShell*** 環境を選択します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
+1. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。***PowerShell*** 環境を選択します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
 
     ![Azure portal と Cloud Shell のペイン](./images/cloud-shell.png)
 
     > **注**: *Bash* 環境を使用するクラウド シェルを以前に作成した場合は、それを ***PowerShell*** に切り替えます。
 
-3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#10530;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
+1. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#10530;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
 
-4. PowerShell のペインで、次のコマンドを入力して、リポジトリを複製します。
+1. PowerShell のペインで、次のコマンドを入力して、リポジトリを複製します。
 
     ```
     rm -r mslearn-databricks -f
     git clone https://github.com/MicrosoftLearning/mslearn-databricks
     ```
 
-5. リポジトリをクローンした後、次のコマンドを入力して **setup.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
+1. リポジトリをクローンした後、次のコマンドを入力して **setup.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
 
     ```
     ./mslearn-databricks/setup.ps1
     ```
 
-6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
-7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの記事「[Azure Databricks での探索的データ分析](https://learn.microsoft.com/azure/databricks/exploratory-data-analysis/)」を確認してください。
+1. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
+1. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの記事「[Azure Databricks での探索的データ分析](https://learn.microsoft.com/azure/databricks/exploratory-data-analysis/)」を確認してください。
 
-## クラスターの作成
-
-Azure Databricks は、Apache Spark "クラスター" を使用して複数のノードでデータを並列に処理する分散処理プラットフォームです。** 各クラスターは、作業を調整するドライバー ノードと、処理タスクを実行するワーカー ノードで構成されています。 
-
-この演習では、ラボ環境で使用されるコンピューティング リソース (リソースが制約される場合がある) を最小限に抑えるために、*単一ノード* クラスターを作成します。 運用環境では、通常、複数のワーカー ノードを含むクラスターを作成します。
-
-> **ヒント**: Azure Databricks ワークスペースに 13.3 LTS 以降のランタイム バージョンを持つクラスターが既にある場合は、それを使ってこの演習を完了し、この手順をスキップできます。
+## Azure Databricks ワークスペースを開く
 
 1. Azure portal で、スクリプトによって作成された **msl-*xxxxxxx*** リソース グループ (または既存の Azure Databricks ワークスペースを含むリソース グループ) に移動します
+
 1. Azure Databricks Service リソース (セットアップ スクリプトを使って作成した場合は、**databricks-*xxxxxxx*** という名前) を選択します。
+
 1. Azure Databricks ワークスペースの [**概要**] ページで、[**ワークスペースの起動**] ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。サインインを求められた場合はサインインします。
 
     > **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
-
-1. 左側のサイドバーで、**[(+) 新規]** タスクを選択し、**[クラスター]** を選択します (**[その他]** サブメニューを確認する必要がある場合があります)。
-1. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
-    - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
-    - **ポリシー**:Unrestricted
-    - **クラスター モード**: 単一ノード
-    - **アクセス モード**: 単一ユーザー (*自分のユーザー アカウントを選択*)
-    - **Databricks Runtime のバージョン**: 13.3 LTS (Spark 3.4.1、Scala 2.12) 以降
-    - **Photon Acceleration を使用する**: 選択済み
-    - **ノード タイプ**: Standard_D4ds_v5
-    - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
-
-1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
-
-> **注**: クラスターの起動に失敗した場合、Azure Databricks ワークスペースがプロビジョニングされているリージョンでサブスクリプションのクォータが不足していることがあります。 詳細については、「[CPU コアの制限によってクラスターを作成できない](https://docs.microsoft.com/azure/databricks/kb/clusters/azure-core-limit)」を参照してください。 その場合は、ワークスペースを削除し、別のリージョンに新しいワークスペースを作成してみてください。 次のように、セットアップ スクリプトのパラメーターとしてリージョンを指定できます: `./mslearn-databricks/setup.ps1 eastus`
     
 ## ノートブックを作成する
 
 1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。
    
-1. 既定のノートブック名 (**無題のノートブック *[日付]***) を「`Explore data with Spark`」に変更し、**[接続]** ドロップダウン リストでクラスターを選択します (まだ選択されていない場合)。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
+1. 既定のノートブック名 (**無題のノートブック *[日付]***) を `Explore data with Spark` に変更し、**[接続]** ドロップダウン リストで、**[サーバーレス]** コンピューティングがまだ選択されていない場合は選択します。 コンピューティングが実行されていない場合は、開始に 1 分ほどかかる場合があります。
 
 ## データの取り込み
 
-1. ノートブックの最初のセルに次のコードを入力します。このコードは、"シェル" コマンドを使用して、GitHub からクラスターで使用されるファイル システムにデータ ファイルをダウンロードします。**
+1. ノートブックの最初のセルに、次のコードを入力して、数個のラボ ファイルを格納するためのボリュームを作成します。
 
-    ```python
-    %sh
-    rm -r /dbfs/spark_lab
-    mkdir /dbfs/spark_lab
-    wget -O /dbfs/spark_lab/2019.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/2019.csv
-    wget -O /dbfs/spark_lab/2020.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/2020.csv
-    wget -O /dbfs/spark_lab/2021.csv https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/2021.csv
+    ```sql
+    %sql
+    CREATE VOLUME IF NOT EXISTS spark_lab
     ```
 
 1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
+
+2. 新しいコード セルを追加し、それを使用して次のコードを実行します。このコードでは、*Python* を使用して GitHub からボリュームにデータ ファイルをダウンロードします。
+
+    ```python
+    import requests
+
+    # Define the current catalog
+    catalog_name = spark.sql("SELECT current_catalog()").collect()[0][0]
+
+    # Define the base path using the current catalog
+    volume_base = f"/Volumes/{catalog_name}/default/spark_lab"
+
+    # List of files to download
+    files = ["2019.csv", "2020.csv", "2021.csv"]
+
+    # Download each file
+    for file in files:
+        url = f"https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/{file}"
+        response = requests.get(url)
+        response.raise_for_status()
+
+        # Write to Unity Catalog volume
+        with open(f"{volume_base}/{file}", "wb") as f:
+            f.write(response.content)
+    ```
+
+3. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
 
 ## ファイル内のデータのクエリを実行する
 
 1. 既存のコード セルの下にマウスを移動し、表示される **[+ コード]** アイコンを使用して新しいコード セルを追加します。 次に、新しいセルに次のコードを入力して実行し、ファイルからデータを読み込み、最初の 100 行を表示します。
 
     ```python
-   df = spark.read.load('spark_lab/*.csv', format='csv')
-   display(df.limit(100))
+    df = spark.read.load(f'/Volumes/{catalog_name}/default/spark_lab/*.csv', format='csv')
+    display(df.limit(100))
     ```
 
 1. 出力を確認し、ファイル内のデータが販売注文に関連しているが、列ヘッダーやデータ型に関する情報が含まれていないことに注意してください。 データの意味をよりわかりやすくするために、データフレームの "*スキーマ*" を定義できます。
@@ -123,7 +127,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
         StructField("UnitPrice", FloatType()),
         StructField("Tax", FloatType())
    ])
-   df = spark.read.load('/spark_lab/*.csv', format='csv', schema=orderSchema)
+   df = spark.read.load(f'/Volumes/{catalog_name}/default/spark_lab/*.csv', format='csv', schema=orderSchema)
    display(df.limit(100))
     ```
 
@@ -297,6 +301,4 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
 ## クリーンアップ
 
-Azure Databricks ポータルの **[コンピューティング]** ページでクラスターを選択し、**[&#9632; 終了]** を選択してクラスターをシャットダウンします。
-
-Azure Databricks を調べ終わったら、作成したリソースを削除できます。これにより、不要な Azure コストが生じないようになり、サブスクリプションの容量も解放されます。
+Azure Databricks を調べ終わったら、不要な Azure コストがかからないように、また、サブスクリプションの容量を解放するために、作成したリソースを削除することができます。
