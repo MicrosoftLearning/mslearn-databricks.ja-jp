@@ -69,7 +69,7 @@ Unity Catalog には、Azure Databricks のデータ資産に対応する集中�
    - **default** - データ オブジェクトを整理するための既定のスキーマ
    - **information_schema** - メタデータを含むシステム スキーマ
 
-5. カタログの詳細パネルで **[詳細]** ボタンをクリックし、**[保存場所]** フィールドと **[種類]** フィールドを確認します。 種類 **MANAGED_CATALOG** は、Databricks がこのカタログ内のデータ資産のストレージとライフサイクルを自動的に管理することを示します。
+5. カタログの詳細パネルで **[詳細]** ボタンをクリックし、**[保存場所]** フィールドと **[種類]** フィールドを確認します。 **MANAGED_CATALOG** 型は、Azure Databricks がこのカタログ内のデータ アセットのストレージとライフサイクルを自動的に管理することを示します。
 
 ## 新しいカタログを作成する
 
@@ -99,24 +99,24 @@ Unity Catalog には、Azure Databricks のデータ資産に対応する集中�
 
 3. ノートブックの最初のセルに次のコードを入力して実行し、新しいカタログを既定値として設定して確認します。
 
-```sql
-%sql
-USE CATALOG <your_catalog_name>;
-SELECT current_catalog();
-```
+    ```
+    %sql
+    USE CATALOG <your_catalog_name>;
+    SELECT current_catalog();
+    ```
 
 ## スキーマの作成と管理
 
 1. 新しいセルを追加し、次のコードを実行して、**sales** というスキーマを作成し、それを既定値として設定します。
 
-```sql
-%sql
-CREATE SCHEMA IF NOT EXISTS sales
-COMMENT 'Schema for sales data';
+    ```
+    %sql
+    CREATE SCHEMA IF NOT EXISTS sales
+    COMMENT 'Schema for sales data';
 
-USE SCHEMA sales;
-SELECT current_schema();
-```
+    USE SCHEMA sales;
+    SELECT current_schema();
+    ```
 
 2. **Catalog Explorer** でカタログに移動して展開し、作成した **sales** スキーマと、**default** および **information_schema** スキーマを確認します。
 
@@ -126,31 +126,31 @@ SELECT current_schema();
 
 1. 新しいセルを追加し、次のコードを実行して、顧客データのマネージド テーブルを作成します。
 
-```sql
-%sql
-CREATE OR REPLACE TABLE customers (
-  customer_id INT,
-  customer_name STRING,
-  email STRING,
-  city STRING,
-  country STRING
-)
-COMMENT 'Customer information table';
-```
+    ```
+    %sql
+    CREATE OR REPLACE TABLE customers (
+      customer_id INT,
+      customer_name STRING,
+      email STRING,
+      city STRING,
+      country STRING
+    )
+    COMMENT 'Customer information table';
+    ```
 
 2. 新しいセルを追加し、次のコードを実行してサンプル データを挿入し、挿入されたことを確認します。
 
-```sql
-%sql
-INSERT INTO customers VALUES
-  (1, 'Aaron Gonzales', 'aaron@contoso.com', 'Seattle', 'USA'),
-  (2, 'Anne Patel', 'anne@contoso.com', 'London', 'UK'),
-  (3, 'Casey Jensen', 'casey@contoso.com', 'Toronto', 'Canada'),
-  (4, 'Elizabeth Moore', 'elizabeth@contoso.com', 'Sydney', 'Australia'),
-  (5, 'Liam Davis', 'liam@contoso.com', 'Berlin', 'Germany');
+    ```
+    %sql
+    INSERT INTO customers VALUES
+      (1, 'Aaron Gonzales', 'aaron@contoso.com', 'Seattle', 'USA'),
+      (2, 'Anne Patel', 'anne@contoso.com', 'London', 'UK'),
+      (3, 'Casey Jensen', 'casey@contoso.com', 'Toronto', 'Canada'),
+      (4, 'Elizabeth Moore', 'elizabeth@contoso.com', 'Sydney', 'Australia'),
+      (5, 'Liam Davis', 'liam@contoso.com', 'Berlin', 'Germany');
 
-SELECT * FROM customers;
-```
+    SELECT * FROM customers;
+    ```
 3. **Catalog Explorer** に切り替えて、カタログ > **sales** スキーマ > **customers** テーブルの順に移動します。 テーブルをクリックして次のことを確認します。
    - **[スキーマ]** タブ - 列の定義とデータ型を確認します
    - **[サンプル データ]** タブ - 挿入したデータのプレビューを表示します
@@ -162,15 +162,15 @@ SELECT * FROM customers;
 
 1. 新しいセルを追加し、次のコードを実行して、顧客をフィルター処理するビューを作成します。
 
-```sql
-%sql
-CREATE OR REPLACE VIEW usa_customers AS
-SELECT customer_id, customer_name, email, city
-FROM customers
-WHERE country = 'USA';
+    ```
+    %sql
+    CREATE OR REPLACE VIEW usa_customers AS
+    SELECT customer_id, customer_name, email, city
+    FROM customers
+    WHERE country = 'USA';
 
-SELECT * FROM usa_customers;
-```
+    SELECT * FROM usa_customers;
+    ```
 
 2. **Catalog Explorer** に切り替えて、カタログ > **sales** スキーマの順に移動します。 **customers** テーブルと **usa_customers** ビューの両方が一覧表示されていることに注目してください。
 
@@ -184,33 +184,33 @@ SQL を使用してオブジェクトを作成し、Catalog Explorer で確認�
 
 2. 新しいセルを追加し、次のコードを実行して、アクセスできるすべてのカタログを一覧表示します。
 
-```sql
-%sql
-SHOW CATALOGS;
-```
+    ```
+    %sql
+    SHOW CATALOGS;
+    ```
 
    これにより、**システム** カタログ、ワークスペース カタログ、カスタム カタログなど、アクセスできるすべてのカタログが一覧表示されます。
 
 3. 新しいセルを追加し、次のコードを実行して、現在のカタログ内のすべてのスキーマを一覧表示します。
 
-```sql
-%sql
-SHOW SCHEMAS;
-```
+    ```
+    %sql
+    SHOW SCHEMAS;
+    ```
 
 4. 新しいセルを追加し、次のコードを実行して、現在のスキーマ内のすべてのテーブルとビューを一覧表示します。
 
-```sql
-%sql
-SHOW TABLES;
-```
+    ```
+    %sql
+    SHOW TABLES;
+    ```
 
 5. 新しいセルを追加し、次のコードを実行して、DESCRIBE を使用して詳細なテーブル メタデータを取得します。
 
-```sql
-%sql
-DESCRIBE EXTENDED customers;
-```
+    ```
+    %sql
+    DESCRIBE EXTENDED customers;
+    ```
 
    DESCRIBE EXTENDED コマンドを使用すると、列の定義、テーブルのプロパティ、保存場所など、テーブルに関する包括的な情報を確認できます。
 
