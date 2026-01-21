@@ -35,10 +35,10 @@ Lakeflow Spark 宣言型パイプラインは、複雑で具体的な詳細を�
     git clone https://github.com/MicrosoftLearning/mslearn-databricks
      ```
 
-1. リポジトリをクローンした後、次のコマンドを入力して **setup.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
+1. リポジトリをクローンした後、次のコマンドを入力して **setup-serverless.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
 
      ```powershell
-    ./mslearn-databricks/setup.ps1
+    ./mslearn-databricks/setup-serverless.ps1
      ```
 
 1. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
