@@ -9,7 +9,7 @@ Azure Databricks を使用すると、ユーザーは独自のデータを使用
 
 このラボは完了するまで、約 **60** 分かかります。
 
-> **注**:Azure Databricks ユーザー インターフェイスは継続的な改善の対象です。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている場合があります。
+> **注**: Azure Databricks ユーザー インターフェイスは継続的な改善の対象となります。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている場合があります。
 
 ## 開始する前に
 
@@ -41,7 +41,7 @@ Azure Databricks を使用すると、ユーザーは独自のデータを使用
 
 6. Cloud Shell を起動し、`az account get-access-token` を実行して API テスト用の一時的な認証トークンを取得します。 以前にコピーしたエンドポイントとキーと共に保持します。
 
-    >**注**:コピーする必要があるのは `accessToken` フィールド値だけであり、JSON 出力全体では**ありません**。
+    >**注**:コピーする必要があるのは `accessToken` フィールド値だけであり、JSON 出力全体では **ありません**。
 
 ## 必要なモデルをデプロイする
 
@@ -75,44 +75,43 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Az
 
 3. **[確認および作成]** を選択し、デプロイが完了するまで待ちます。 次にリソースに移動し、ワークスペースを起動します。
 
-## クラスターの作成
-
-Azure Databricks は、Apache Spark "クラスター" を使用して複数のノードでデータを並列に処理する分散処理プラットフォームです。** 各クラスターは、作業を調整するドライバー ノードと、処理タスクを実行するワーカー ノードで構成されています。 この演習では、ラボ環境で使用されるコンピューティング リソース (リソースが制約される場合がある) を最小限に抑えるために、*単一ノード* クラスターを作成します。 運用環境では、通常、複数のワーカー ノードを含むクラスターを作成します。
-
-> **ヒント**: Azure Databricks ワークスペースに 16.4 LTS **<u>ML</u>** 以降のランタイム バージョンを備えたクラスターが既にある場合は、それを使ってこの演習を完了し、この手順をスキップできます。
-
-1. Azure portal で、Azure Databricks ワークスペースが作成されたリソース グループを参照します。
-2. Azure Databricks サービス リソースを選択します。
-3. Azure Databricks ワークスペースの [**概要**] ページで、[**ワークスペースの起動**] ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。サインインを求められた場合はサインインします。
-
-> **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
-
-4. 左側のサイドバーで、**[(+) 新規]** タスクを選択し、**[クラスター]** を選択します。
-5. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
-    - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
-    - **ポリシー**:Unrestricted
-    - **機械学習**: 有効
-    - **Databricks Runtime**:16.4 LTS
-    - **Photon Acceleration を使用する**: <u>オフ</u>にする
-    - **ワーカー タイプ**:Standard_D4ds_v5
-    - **シングル ノード**:オン
-
-6. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
-
-> **注**:クラスターの起動に失敗した場合、Azure Databricks ワークスペースがプロビジョニングされているリージョンでサブスクリプションのクォータが不足していることがあります。 詳細については、「[CPU コアの制限によってクラスターを作成できない](https://docs.microsoft.com/azure/databricks/kb/clusters/azure-core-limit)」を参照してください。 その場合は、ワークスペースを削除し、別のリージョンに新しいワークスペースを作成してみてください。
-
 ## 新しいノートブックの作成とデータの取り込み
 
-1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 **[接続]** ドロップダウン リストで、まだ選択されていない場合はクラスターを選択します。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
-1. 新しいブラウザー タブで、`https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/training_set.jsonl` で [トレーニング データセット](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/training_set.jsonl)と、`https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/validation_set.jsonl` でこの演習で使用する[検証データセット](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/validation_set.jsonl)をダウンロードします。
+1. Azure portal で、Azure Databricks ワークスペースが作成されたリソース グループを参照します。
 
-> **注**: デバイスにおいて、デフォルトでファイルを .txt ファイルとして保存するようになっている場合があります。 **[ファイルの種類]** フィールドで **[すべてのファイル]** を選択し .txt サフィックスを削除して、ファイルを JSONL として保存していることを確認します。
+1. Azure Databricks サービス リソースを選択します。
 
-1. Databricks ワークスペース タブに戻り、ノートブックを開いた状態で、**カタログ (Ctrl + Alt + C)** エクスプローラーを選択し、➕ アイコンを選択して**データを追加**します。
-1. **[データの追加]** ページで、**[DBFS にファイルをアップロードする]** を選択します。
-1. **[DBFS]** ページで、ターゲット ディレクトリに `fine_tuning` という名前を付け、前に保存した .jsonl ファイルをアップロードします。
-1. サイドバーで **[ワークスペース]** を選択し、ノートブックをもう一度開きます。
-1. ノートブックの最初のセルに、この演習の冒頭でコピーしたアクセス情報を含む次のコードを入力して、Azure OpenAI リソースを使用する際の認証用の永続的な環境変数を割り当てます。
+1. Azure Databricks ワークスペースの [**概要**] ページで、[**ワークスペースの起動**] ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。サインインを求められた場合はサインインします。
+
+    > **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
+
+1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 既定のコンピューティングとして **[サーバーレス]** を選択します。
+
+1. 最初のコード セルに次のコードを入力して実行し、必要なライブラリをインストールします。
+
+    ```python
+    %pip install openai tiktoken numpy
+    dbutils.library.restartPython()
+    ```
+
+1. 新しいセルに次の SQL クエリを入力して、この演習のデータを既定のカタログに格納するために使用する新しいボリュームを作成します。
+
+    ```python
+   %sql 
+   CREATE VOLUME <catalog_name>.default.fine_tuning;
+    ```
+
+1. `<catalog_name>` を既定のカタログの名前に置き換えます。 サイドバーで **[カタログ]** を選択すると、その名前を確認できます。
+1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
+1. 新しいセルで、次のコードを実行して、"シェル" コマンドを使用して GitHub から Unity カタログにデータをダウンロードします。**
+
+    ```python
+   %sh
+   wget -O /Volumes/<catalog_name>/default/fine_tuning/training_set.jsonl https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/training_set.jsonl
+   wget -O /Volumes/<catalog_name>/default/fine_tuning/validation_set.jsonl https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/validation_set.jsonl
+    ```
+
+3. 新しいセルで、この演習の冒頭でコピーしたアクセス情報を含む次のコードを実行して、Azure OpenAI リソースを使用するときに認証用の永続的な環境変数を割り当てます。
 
     ```python
    import os
@@ -121,8 +120,6 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    os.environ["AZURE_OPENAI_ENDPOINT"] = "your_openai_endpoint"
    os.environ["TEMP_AUTH_TOKEN"] = "your_access_token"
     ```
-
-1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
      
 ## トークン数を検証する
 
@@ -161,7 +158,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
        print(f"min / max: {min(values)}, {max(values)}")
        print(f"mean / median: {np.mean(values)}, {np.median(values)}")
 
-   files = ['/dbfs/FileStore/tables/fine_tuning/training_set.jsonl', '/dbfs/FileStore/tables/fine_tuning/validation_set.jsonl']
+   files = ['/Volumes/<catalog_name>/default/fine_tuning/training_set.jsonl', '/Volumes/<catalog_name>/default/fine_tuning/validation_set.jsonl']
 
    for file in files:
        print(f"File: {file}")
@@ -199,8 +196,8 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
       api_version = "2024-05-01-preview"  # This API version or later is required to access seed/events/checkpoint features
     )
 
-    training_file_name = '/dbfs/FileStore/tables/fine_tuning/training_set.jsonl'
-    validation_file_name = '/dbfs/FileStore/tables/fine_tuning/validation_set.jsonl'
+    training_file_name = '/Volumes/<catalog_name>/default/fine_tuning/training_set.jsonl'
+    validation_file_name = '/Volumes/<catalog_name>/default/fine_tuning/validation_set.jsonl'
 
     training_response = client.files.create(
         file = open(training_file_name, "rb"), purpose="fine-tune"
@@ -242,7 +239,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    print("Status:", response.status)
     ```
 
-    >**注**:左側のサイド バーで **[微調整]** を選択して、AI Foundry のジョブの状態を監視することもできます。
+>**注**:左側のサイドバーで **[微調整]** を選択して、AI Foundry のジョブの状態を監視することもできます。
 
 3. ジョブの状態が `succeeded` に変わったら、次のコードを実行して、最終的な結果を取得します。
 
@@ -252,16 +249,12 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    print(response.model_dump_json(indent=2))
    fine_tuned_model = response.fine_tuned_model
     ```
+   
+## 微調整されたモデルをデプロイする
 
-4. json 応答を確認し、`"fine_tuned_model"` フィールドに生成された一意の名前をメモします。 これは、次の省略可能なタスクで使用されます。
+これで微調整されたモデルを取得できたので、カスタマイズしたモデルとしてデプロイし、Azure AI Foundry の**チャット** プレイグラウンド、またはチャット入力候補 API のいずれかを使用して、他のデプロイ済みモデルと同様に使用できます。
 
-    >**注**:モデルの微調整には 60 分以上かかる場合があるため、この時点で演習を完了し、時間に余裕がある場合は、モデルのデプロイをオプションのタスクと考えることができます。
-
-## [省略可能] 微調整されたモデルをデプロイする
-
-これで微調整されたモデルができたので、カスタマイズしたモデルとしてデプロイし、Azure AI Foundry の**チャット** プレイグラウンド、またはチャット補完 API のいずれかを使用して、他のデプロイ済みモデルと同様に使用できます。
-
-1. 新しいセルで次のコードを実行し、プレースホルダー `<YOUR_SUBSCRIPTION_ID>`、`<YOUR_RESOURCE_GROUP_NAME>`、`<YOUR_AZURE_OPENAI_RESOURCE_NAME>`、`<FINE_TUNED_MODEL>` を置き換えて、微調整されたモデルをデプロイします。
+1. 新しいセルで、次のコードを実行して、微調整されたモデルをデプロイします。
    
     ```python
    import json
@@ -281,7 +274,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
        "properties": {
            "model": {
                "format": "OpenAI",
-               "name": "<FINE_TUNED_MODEL>",
+               "name": "<YOUR_FINE_TUNED_MODEL>",
                "version": "1"
            }
        }
@@ -299,8 +292,6 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    print(r.json())
     ```
 
-> **注**:サブスクリプション ID は、Azure Portal の Databricks ワークスペースまたは OpenAI リソースの [概要] ページで確認できます。
-
 2. 新しいセルで、次のコードを実行して、チャット入力候補呼び出しでカスタマイズしたモデルを使用します。
    
     ```python
@@ -314,7 +305,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    )
 
    response = client.chat.completions.create(
-       model = "gpt-4o-ft",
+       model = "gpt-4o-ft", # model = "Custom deployment name you chose for your fine-tuning model"
        messages = [
            {"role": "system", "content": "You are a helpful assistant."},
            {"role": "user", "content": "Does Azure OpenAI support customer managed keys?"},
@@ -325,9 +316,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
 
    print(response.choices[0].message.content)
     ```
-
->**注**:微調整されたモデル デプロイが完了するまでに数分かかる場合があります。 Azure AI Foundry の **[Deployments]** ページで確認できます。
-
+ 
 ## クリーンアップ
 
 Azure OpenAI リソースでの作業が完了したら、**Azure portal** (`https://portal.azure.com`) でデプロイまたはリソース全体を忘れずに削除します。

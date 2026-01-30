@@ -37,60 +37,54 @@ lab:
    git clone https://github.com/MicrosoftLearning/mslearn-databricks
     ```
 
-5. リポジトリをクローンした後、次のコマンドを入力して **setup.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
+5. リポジトリをクローンした後、次のコマンドを入力して **setup-serverless.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
 
-    ```powershell
-   ./mslearn-databricks/setup.ps1
+     ```powershell
+    ./mslearn-databricks/setup-serverless.ps1
     ```
 
 6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
 
 7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。
 
-## クラスターの作成
+## ノートブックを作成し、必要なライブラリをインストールする
 
-Azure Databricks は、Apache Spark "クラスター" を使用して複数のノードでデータを並列に処理する分散処理プラットフォームです。** 各クラスターは、作業を調整するドライバー ノードと、処理タスクを実行するワーカー ノードで構成されています。 この演習では、ラボ環境で使用されるコンピューティング リソース (リソースが制約される場合がある) を最小限に抑えるために、*単一ノード* クラスターを作成します。 運用環境では、通常、複数のワーカー ノードを含むクラスターを作成します。
+1. Azure portal で、スクリプトによって作成された **msl-*xxxxxxx*** リソース グループ (または既存の Azure Databricks ワークスペースを含むリソース グループ) に移動します。
 
-> **ヒント**: Azure Databricks ワークスペースに 16.4 LTS **<u>ML</u>** 以降のランタイム バージョンを備えたクラスターが既にある場合は、それを使ってこの演習を完了し、この手順をスキップできます。
-
-1. Azure portal で、スクリプトによって作成された **msl-*xxxxxxx*** リソース グループ (または既存の Azure Databricks ワークスペースを含むリソース グループ) に移動します
 1. Azure Databricks Service リソース (セットアップ スクリプトを使って作成した場合は、**databricks-*xxxxxxx*** という名前) を選択します。
+
 1. Azure Databricks ワークスペースの [**概要**] ページで、[**ワークスペースの起動**] ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。サインインを求められた場合はサインインします。
 
     > **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
 
-1. 左側のサイドバーで、**[(+) 新規]** タスクを選択し、**[クラスター]** を選択します。
-1. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
-    - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
-    - **ポリシー**:Unrestricted
-    - **機械学習**: 有効
-    - **Databricks Runtime**:16.4 LTS
-    - **Photon Acceleration を使用する**: <u>オフ</u>にする
-    - **ワーカー タイプ**:Standard_D4ds_v5
-    - **シングル ノード**:オン
+1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 既定のコンピューティングとして **[サーバーレス]** を選択します。
 
-1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
+1. 最初のコード セルに次のコードを入力して実行し、必要なライブラリをインストールします。
 
-> **注**: クラスターの起動に失敗した場合、Azure Databricks ワークスペースがプロビジョニングされているリージョンでサブスクリプションのクォータが不足していることがあります。 詳細については、「[CPU コアの制限によってクラスターを作成できない](https://docs.microsoft.com/azure/databricks/kb/clusters/azure-core-limit)」を参照してください。 その場合は、ワークスペースを削除し、別のリージョンに新しいワークスペースを作成してみてください。 次のように、セットアップ スクリプトのパラメーターとしてリージョンを指定できます: `./mslearn-databricks/setup.ps1 eastus`
-
-## 必要なライブラリをインストールする
-
-1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 **[接続]** ドロップダウン リストで、まだ選択されていない場合はクラスターを選択します。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
-1. 最初のコード セルに、次のコードを入力して実行し、必要なライブラリをインストールします。
-   
     ```python
-   %pip install faiss-cpu
+   %pip install transformers==4.53.0 databricks-vectorsearch==0.56 torch
    dbutils.library.restartPython()
     ```
    
-## データを取り込む
+## データの取り込み
 
-1. 新しいブラウザー タブで、この演習でデータとして使用する[サンプル ファイル](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/enwiki-latest-pages-articles.xml) (`https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/enwiki-latest-pages-articles.xml`) をダウンロードします。
-1. Databricks ワークスペース タブに戻り、ノートブックを開いた状態で、**カタログ (Ctrl + Alt + C)** エクスプローラーを選択し、➕ アイコンを選択して**データを追加**します。
-1. **[データの追加]** ページで、**[DBFS にファイルをアップロードする]** を選択します。
-1. **[DBFS]** ページで、ターゲット ディレクトリ `RAG_lab` に名前を付け、前に保存した.xml ファイルをアップロードします。
-1. サイドバーで **[ワークスペース]** を選択し、ノートブックをもう一度開きます。
-1. 新しいコード セルで、次のコードを実行して、生データからデータフレームを作成します。
+1. ノートブックの新しいセルに次の SQL クエリを入力して、この演習のデータを既定のカタログに格納するために使用する新しいボリュームを作成します。
+
+    ```python
+   %sql 
+   CREATE VOLUME <catalog_name>.default.RAG_lab;
+    ```
+
+1. `<catalog_name>` をワークスペースの名前に置き換えます。これは、Azure Databricks によって既定のカタログがその名前で自動的に作成されるためです。
+1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
+1. 新しいセルで、次のコードを実行して、"シェル" コマンドを使用して GitHub から Unity カタログにデータをダウンロードします。**
+
+    ```python
+   %sh
+   wget -O /Volumes/<catalog_name>/default/RAG_lab/enwiki-latest-pages-articles.xml https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/enwiki-latest-pages-articles.xml
+    ```
+
+1. 新しいセルで、次のコードを実行して、生データからデータフレームを作成します。
 
     ```python
    from pyspark.sql import SparkSession
@@ -103,7 +97,7 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    # Read the XML file
    raw_df = spark.read.format("xml") \
        .option("rowTag", "page") \
-       .load("/FileStore/tables/RAG_lab/enwiki_latest_pages_articles.xml")
+       .load("/Volumes/<catalog_name>/default/RAG_lab/enwiki-latest-pages-articles.xml")
 
    # Show the DataFrame
    raw_df.show(5)
@@ -112,61 +106,72 @@ Azure Databricks は、Apache Spark "クラスター" を使用して複数の�
    raw_df.printSchema()
     ```
 
-1. セルの左側にある **[&#9656; セルの実行]** メニュー オプションを使用して実行を行います。 そして、コードによって実行される Spark ジョブが完了するまで待ちます。
-1. 新しいセルで、次のコードを実行してデータをクリーンして前処理し、関連するテキスト フィールドを抽出します。
+1. 新しいセルで、次のコードを実行し、`<catalog_name>` を Unity カタログの名前に置き換えて、データをクリーンアップして前処理し、関連するテキスト フィールドを抽出します。
 
     ```python
    from pyspark.sql.functions import col
 
    clean_df = raw_df.select(col("title"), col("revision.text._VALUE").alias("text"))
    clean_df = clean_df.na.drop()
+   clean_df.write.format("delta").mode("overwrite").saveAsTable("<catalog_name>.default.wiki_pages")
    clean_df.show(5)
     ```
 
+    **カタログ (Ctrl + Alt + C)** エクスプローラーを開いてペインを更新すると、既定の Unity カタログに Delta テーブルが作成されます。
+
 ## 埋め込みを生成し、ベクトル検索を実装する
 
-FAISS (Facebook AI Similarity Search) は、Meta AI によって開発されたオープンソース ベクトル データベース ライブラリであり、高密度ベクトルの効率的な類似性検索とクラスタリング向けに設計されています。 FAISS を使用すると、ニアレストネイバー検索をすばやくスケーラブルに行うことができます。また、ハイブリッド検索システムと統合して、ベクトル ベースの類似性と従来のキーワード ベースの手法を組み合わせ、検索結果の関連性を高めることができます。
+Databricks の Mosaic AI ベクトル検索は、Azure Databricks プラットフォーム内に統合されたベクトル データベース ソリューションです。 Hierarchical Navigable Small World (HNSW) アルゴリズムを使用して、埋め込みのストレージと取得を最適化します。 これにより、効率的な最近隣検索が可能になり、そのハイブリッド キーワード類似性検索機能は、ベクトル ベースとキーワード ベースの検索手法を組み合わせることにより、より関連性の高い結果を提供します。
 
-1. 新しいセルで、次のコードを実行して事前トレーニング済みの `all-MiniLM-L6-v2` モデルを読み込み、テキストを埋め込みに変換します。
+1. 新しいセルで、差分同期インデックスを作成する前に、次の SQL クエリを実行してソース テーブルのデータ フィードの変更機能を有効にします。
 
     ```python
-   from sentence_transformers import SentenceTransformer
-   import numpy as np
-    
-   # Load pre-trained model
-   model = SentenceTransformer('all-MiniLM-L6-v2')
-    
-   # Function to convert text to embeddings
-   def text_to_embedding(text):
-       embeddings = model.encode([text])
-       return embeddings[0]
-    
-   # Convert the DataFrame to a Pandas DataFrame
-   pandas_df = clean_df.toPandas()
-    
-   # Apply the function to get embeddings
-   pandas_df['embedding'] = pandas_df['text'].apply(text_to_embedding)
-   embeddings = np.vstack(pandas_df['embedding'].values)
+   %sql
+   ALTER TABLE <catalog_name>.default.wiki_pages SET TBLPROPERTIES (delta.enableChangeDataFeed = true)
     ```
 
-1. 新しいセルで、次のコードを実行して FAISS インデックスを作成し、クエリを実行します。
+2. 新しいセルで、次のコードを実行して、ベクトル検索インデックスを作成します。
 
     ```python
-   import faiss
-    
-   # Create a FAISS index
-   d = embeddings.shape[1]  # dimension
-   index = faiss.IndexFlatL2(d)  # L2 distance
-   index.add(embeddings)  # add vectors to the index
-    
-   # Perform a search
-   query_embedding = text_to_embedding("Anthropology fields")
-   k = 1  # number of nearest neighbors
-   distances, indices = index.search(np.array([query_embedding]), k)
-    
-   # Get the results
-   results = pandas_df.iloc[indices[0]]
-   display(results)
+   from databricks.vector_search.client import VectorSearchClient
+
+   client = VectorSearchClient()
+
+   client.create_endpoint(
+       name="vector_search_endpoint",
+       endpoint_type="STANDARD"
+   )
+
+   index = client.create_delta_sync_index(
+     endpoint_name="vector_search_endpoint",
+     source_table_name="<catalog_name>.default.wiki_pages",
+     index_name="<catalog_name>.default.wiki_index",
+     pipeline_type="TRIGGERED",
+     primary_key="title",
+     embedding_source_column="text",
+     embedding_model_endpoint_name="databricks-gte-large-en"
+    )
+    ```
+
+    > **注**:ベクトル検索のエンドポイントとインデックスの作成には数分かかる場合があります。 操作が完了するまで待ってから続行してください。
+     
+**カタログ (Ctrl + Alt + C)** エクスプローラーを開いてペインを更新すると、既定の Unity カタログにインデックスが作成されます。
+
+> **注:**  次のコード セルを実行する前に、エンドポイントとインデックスの両方がオンラインであることを確認します。
+> - 左側のサイド バーで **[コンピューティング]** を選択してから **[ベクトル検索]** タブを選択して、エンドポイントの状態が **[オンライン]** であることを確認します。
+> - [カタログ] ペインでインデックスを右クリックし、**[カタログ エクスプローラーで開く]** を選択します。 インデックスの状態が **[オンライン]** になるまで待ちます (これには 5 ～ 10 分かかる場合があります)。
+> - エラーが発生した場合は、インデックスの同期にさらに時間がかかる場合があります。`index.sync()` を実行して、同期を手動でトリガーできます。
+
+3. 新しいセルで、次のコードを実行して、クエリ ベクトルに基づいて関連するドキュメントを検索します。
+
+    ```python
+   results_dict=index.similarity_search(
+       query_text="Anthropology fields",
+       columns=["title", "text"],
+       num_results=1
+   )
+
+   display(results_dict)
     ```
 
 出力で、クエリ プロンプトに関連する対応する Wiki ページが見つかることを確認します。
@@ -178,26 +183,29 @@ FAISS (Facebook AI Similarity Search) は、Meta AI によって開発された�
 1. 新しいセルで、次のコードを実行して、取得したデータをユーザーのクエリと組み合わせて、LLM のリッチ プロンプトを作成します。
 
     ```python
+   # Convert the dictionary to a DataFrame
+   results = spark.createDataFrame([results_dict['result']['data_array'][0]])
+
    from transformers import pipeline
-    
+
    # Load the summarization model
    summarizer = pipeline("summarization", model="facebook/bart-large-cnn", framework="pt")
-    
-   # Extract the string values from the DataFrame column
-   text_data = results["text"].tolist()
-    
+
+   # Extract the string values from the DataFrame column (serverless-compatible)
+   text_data = [row["_2"] for row in results.select("_2").collect()]
+
    # Pass the extracted text data to the summarizer function
    summary = summarizer(text_data, max_length=512, min_length=100, do_sample=True)
-    
+
    def augment_prompt(query_text):
        context = " ".join([item['summary_text'] for item in summary])
-       return f"{context}\n\nQuestion: {query_text}\nAnswer:"
-    
+       return f"Query: {query_text}\nContext: {context}"
+
    prompt = augment_prompt("Explain the significance of Anthropology")
    print(prompt)
     ```
 
-1. 新しいセルで、次のコードを実行して、LLM を使用して応答を生成します。
+3. 新しいセルで、次のコードを実行して、LLM を使用して応答を生成します。
 
     ```python
    from transformers import GPT2LMHeadModel, GPT2Tokenizer
@@ -223,6 +231,4 @@ FAISS (Facebook AI Similarity Search) は、Meta AI によって開発された�
 
 ## クリーンアップ
 
-Azure Databricks ポータルの **[コンピューティング]** ページでクラスターを選択し、**[&#9632; 終了]** を選択してクラスターをシャットダウンします。
-
-Azure Databricks を調べ終わったら、作成したリソースを削除できます。これにより、不要な Azure コストが生じないようになり、サブスクリプションの容量も解放されます。
+Azure Databricks を調べ終わったら、不要な Azure コストがかからないように、また、サブスクリプションの容量を解放するために、作成したリソースを削除することができます。
