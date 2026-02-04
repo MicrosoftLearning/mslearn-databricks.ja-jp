@@ -100,7 +100,7 @@ MLflow の LLM 追跡機能を使用すると、パラメーター、メトリ�
 
     os.environ["AZURE_OPENAI_API_KEY"] = "your_openai_api_key"
     os.environ["AZURE_OPENAI_ENDPOINT"] = "your_openai_endpoint"
-    os.environ["AZURE_OPENAI_API_VERSION"] = "2024-05-01-preview"
+    os.environ["AZURE_OPENAI_API_VERSION"] = "your_model_version_example: '2023-03-15-preview'"
      ```
 1. 新しいセルで、次のコードを実行して、Azure OpenAI クライアントを初期化します。
 
