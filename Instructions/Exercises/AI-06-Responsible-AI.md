@@ -99,7 +99,7 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Az
 
     os.environ["AZURE_OPENAI_API_KEY"] = "your_openai_api_key"
     os.environ["AZURE_OPENAI_ENDPOINT"] = "your_openai_endpoint"
-    os.environ["AZURE_OPENAI_API_VERSION"] = "2023-03-15-preview"
+    os.environ["AZURE_OPENAI_API_VERSION"] = "your_model_version_example: '2023-03-15-preview'"
      ```
 
 1. 新しいセルで、次のコードを実行して、2 つの入力サンプルを作成します。
