@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks を使用した取得拡張生成
+  description: データを取り込んで前処理し、Databricks Mosaic AI Vector Search を使ってベクトル埋め込みを作成し、類似性検索を実行して関連するコンテキストを取得することで、検索拡張生成 (RAG) の実装の実践経験を得ます。 取得したデータで LLM プロンプトを拡張し、外部のナレッジ ソースが組み込まれたより正確でコンテキストの関連性が高い応答を生成する方法を学びます。
+  duration: 40 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks を使用した取得拡張生成

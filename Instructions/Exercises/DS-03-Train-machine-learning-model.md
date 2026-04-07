@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks での機械学習の概要
+  description: カテゴリ変数のエンコードや Spark MLLib を使った数値特徴の正規化のような、データの準備と特徴エンジニアリングの手法など、Azure Databricks での完全な機械学習ワークフローを実践的に体験します。 さまざまなアルゴリズム (ロジスティック回帰とデシジョン ツリー) を使って分類モデルをトレーニングおよび評価し、データ変換とモデル トレーニングを再利用可能な ML パイプラインにカプセル化して、新しいデータで推論するためにトレーニング済みのモデルを保存する方法を学びます。
+  duration: 45 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks での機械学習の概要

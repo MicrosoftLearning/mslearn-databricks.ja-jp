@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks で Apache Spark を使用してデータを変換する
+  description: 重複の削除と null 値の処理によってデータをクリーニングし、select と where メソッドを使ってデータフレームをフィルター処理し、groupBy と sum 関数を使ってデータを集計することで、重要なデータ変換タスクの実行を実践的に経験します。 年単位のサマリーの計算や、さまざまなディメンションによるデータのグループ化など、PySpark データフレーム操作と Spark SQL の両方を使って同じ変換を実行する方法を学びます。
+  duration: 30 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks で Apache Spark を使用してデータを変換する

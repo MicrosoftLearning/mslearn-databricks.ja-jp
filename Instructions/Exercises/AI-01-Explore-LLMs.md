@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks で大規模言語モデルを確認する
+  description: テキスト要約、感情分析、翻訳、ゼロショット分類などの実用的な NLP タスクのための、Hugging Face から Azure Databricks への事前トレーニング済み大規模言語モデルの統合を実際に体験します。 Transformers ライブラリのパイプライン インターフェイスを使って、さまざまな NLP 機能をすばやく実装し、さまざまなユース ケースのためにモデル パラメーターを構成する方法を学びます。
+  duration: 30 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks で大規模言語モデルを確認する

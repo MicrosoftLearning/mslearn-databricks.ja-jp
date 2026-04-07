@@ -1,6 +1,14 @@
 ---
 lab:
   title: Azure Data Factory を使用して Azure Databricks ノートブックを自動化する
+  description: dbutils.widgets を使ってパラメーター化されたノートブックを作成し、アクセス トークン認証を使ってリンクされたサービスを設定し、ノートブック アクティビティを実行するためにジョブ クラスターを動的にプロビジョニングする Data Factory パイプラインを構築することで、Azure Data Factory パイプライン内での Azure Databricks ノートブックの調整を実践的に経験します。 ノートブックの実行にパラメーターを渡し、パイプラインの実行を監視し、Databricks データ処理タスクを広範な Data Engineering ワークフローに統合する方法を学びます。
+  duration: 40 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Data Factory
+    - Azure Portal
 ---
 
 # Azure Data Factory を使用して Azure Databricks ノートブックを自動化する

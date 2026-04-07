@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks で MLflow を使用する
+  description: 複数のトレーニング実行についてパラメーター、メトリック、トレーニング済みモデルをログし、モデル トレーニング コードをパラメーター実験用の再利用可能な関数に整理することで、MLflow を用いた機械学習の実験の追跡を実践的に経験します。 パフォーマンスが最もよいモデルを MLflow のモデル レジストリに登録し、新しいデータの推論のために REST API を介してクエリできるリアルタイム サービス エンドポイントとしてそれをデプロイする方法を学びます。
+  duration: 45 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks で MLflow を使用する

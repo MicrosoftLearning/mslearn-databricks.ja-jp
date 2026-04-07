@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks で機械学習用にハイパーパラメーターを最適化する
+  description: パラメーター値 (maxDepth や maxBins など) のさまざまな組み合わせを探索して損失メトリックを返す目的関数を定義することで、Optuna ライブラリを用いた機械学習モデルのハイパーパラメーターの体系的な最適化を実践的に経験します。 MLflow で各試行を追跡して、複数のハイパーパラメーター構成を自動的にテストする反復的な最適化実験を実行し、予測エラーを最小限にする最適な組み合わせを特定する方法を学びます。
+  duration: 30 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks で機械学習用にハイパーパラメーターを最適化する

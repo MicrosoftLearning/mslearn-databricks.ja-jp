@@ -1,6 +1,13 @@
 ---
 lab:
   title: Lakeflow Spark 宣言パイプラインを作成する
+  description: COVID-19 データ用のブロンズ、シルバー、ゴールド レイヤーを含むメダリオン アーキテクチャを作成することで、Lakeflow を使って宣言型 ETL パイプラインを構築する実践的な経験を得ます。増分インジェストとデータ品質の制約を自動的に処理するストリーミング テーブルと具体化されたビューを、SQL を使って定義します。 ビジネス ルール (null ではない国の地域など) を適用するデータ品質の期待を実装し、分析用の集計ビューを作成し、経時的な傾向を示す折れ線グラフで結果データを視覚化する方法を学びます。
+  duration: 40 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Lakeflow Spark 宣言パイプラインを作成する

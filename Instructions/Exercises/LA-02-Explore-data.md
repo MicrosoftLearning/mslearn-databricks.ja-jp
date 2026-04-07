@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks を使用したデータ探索
+  description: 定義済みのスキーマを使って CSV データを読み込み、データフレーム メソッドと Spark SQL の両方を使ってそのクエリを実行し、組み込みのグラフ エディターを使ってさまざまな視覚化を作成することで、探索的データ分析を実践的に経験します。 matplotlib や seaborn などの Python 視覚化ライブラリを使って、販売データのパターンを分析するための複数のサブプロットを含むカスタマイズされた棒グラフ、折れ線グラフ、円グラフを作成する方法を学びます。
+  duration: 30 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks を使用したデータ探索
