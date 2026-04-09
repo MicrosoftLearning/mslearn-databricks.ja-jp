@@ -1,6 +1,14 @@
 ---
 lab:
   title: Azure Databricks と Azure OpenAI を使用した LangChain でのマルチステージ推論
+  description: LangChain を使って高度な AI アプリケーションを構築する実践的な経験を得るため、埋め込みを使ってベクトル インデックスを作成し、質問応答システムのためのレトリバーベースのチェーンを実装して、複数のチェーンを複数ステージの推論システムに結合します。 ドキュメントから関連するコンテキストを取得した後、その出力をソーシャル メディアの投稿のような異なる形式に変換するといった、複雑なテキスト処理タスクを LangChain コンポーネントを連結して処理する方法を学びます。
+  duration: 30 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
+    - Microsoft Foundry
 ---
 
 # Azure Databricks と Azure OpenAI を使用した LangChain でのマルチステージ推論
@@ -47,13 +55,13 @@ lab:
 
 ## 必要なモジュールをデプロイする
 
-Azure には、モデルのデプロイ、管理、調査に使用できる **Azure AI Foundry** という名前の Web ベース ポータルが用意されています。 Azure AI Foundry を使用してモデルをデプロイして、Azure OpenAI の調査を開始します。
+Azure には、モデルのデプロイ、管理、調査に使用できる **Microsoft Foundry** という名前の Web ベース ポータルがあります。 Microsoft Foundry を使ってモデルをデプロイし、Azure OpenAI の調査を始めます。
 
-> **注**:Azure AI Foundry を使用すると、実行するタスクを提案するメッセージ ボックスが表示される場合があります。 これらを閉じて、この演習の手順に従うことができます。
+> **注**: Microsoft Foundry を使う際、実行するタスクを提案するメッセージ ボックスが表示される場合があります。 これらを閉じて、この演習の手順に従うことができます。
 
-1. Azure portal にある Azure OpenAI リソースの **[概要]** ページで、**[開始する]** セクションまで下にスクロールし、ボタンを選択して **[Azure AI Foundry]** に移動します。
+1. Azure portal の Azure OpenAI リソースの **[概要]** ページで、**[開始する]** セクションまで下にスクロールし、ボタンを選んで **[Microsoft Foundry]** に移動します。
    
-1. Azure AI Foundry の左ペインで、**[デプロイ]** ページを選び、既存のモデル デプロイを表示します。 まだない場合は、次の設定で **gpt-4o** モデルの新しいデプロイを作成します。
+1. Microsoft Foundry の左側のペインで、**[デプロイ]** ページを選んで既存のモデル デプロイを表示します。 まだない場合は、次の設定で **gpt-4o** モデルの新しいデプロイを作成します。
     - **デプロイ名**: *gpt-4o*
     - **デプロイの種類**:Standard
     - **モデル バージョン**: *既定のバージョンを使用する*

@@ -1,6 +1,13 @@
 ---
 lab:
   title: AutoML を使用してモデルをトレーニングする
+  description: Azure Databricks AutoML を使って、さまざまなアルゴリズム (lightgbm、sklearn、xgboost) とハイパーパラメーターで複数の機械学習モデルを自動的にトレーニングおよび評価し、選択された評価メトリックに基づいて最適なパフォーマンスを選択する実践的な経験を得ます。 生成されたトレーニング ノートブックをレビューして AutoML のアプローチを理解し、最適なモデルを登録し、推論用のリアルタイム サービング エンドポイントとしてそれをデプロイする方法について学びます。
+  duration: 45 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # AutoML を使用してモデルをトレーニングする

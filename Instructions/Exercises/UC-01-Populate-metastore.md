@@ -1,6 +1,10 @@
 ---
 lab:
   title: Unity Catalog のメタストアの設定と操作
+  description: SQL コマンドを使ってカタログ、スキーマ、テーブル、ビューを作成した後、SQL クエリ (SHOW CATALOGS、DESCRIBE EXTENDED) と Catalog Explorer の両方を使って 3 レベルの名前空間階層をナビゲートすることで、Unity Catalog データ オブジェクトの作成と管理を実践的に経験します。 Unity Catalog でオブジェクトの依存関係とデータ系列がどのように追跡されるかを学び、さまざまな方法 (プログラムでの SQL やビジュアル インターフェイス) を使ってメタストア メタデータを検査および管理する方法を理解します。
+  duration: 30 minutes
+  level: 300
+  islab: true
 ---
 
 # Unity Catalog のメタストアの設定と操作

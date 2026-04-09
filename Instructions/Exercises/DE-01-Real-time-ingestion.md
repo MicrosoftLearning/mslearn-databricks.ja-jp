@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks と共に Spark 構造化ストリーミングと Delta Lake を使用したリアルタイム データ処理
+  description: Spark 構造化ストリーミングを使ってシミュレートされた IoT デバイスからストリーミング JSON データを取り込んで処理し、リアルタイム データ パイプラインの構築を実際に経験します。 ACID トランザクションでストリーミング シンクとして Delta Lake を使用する方法、ストリーミング データに基づいてテーブルを作成する方法、継続的に更新されるデータのクエリを行って、新しい情報がリアルタイムでキャプチャされていることを確認する方法を学びます。
+  duration: 30 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks と共に Spark 構造化ストリーミングと Delta Lake を使用したリアルタイム データ処理

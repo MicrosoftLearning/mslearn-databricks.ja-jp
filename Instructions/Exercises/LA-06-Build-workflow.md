@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks Lakeflow ジョブを使用してワークロードをデプロイする
+  description: データ インジェスト、クリーニング、集計などの ETL 操作に関するノートブック タスクを調整する Lakeflow ジョブを作成することで、データ ワークフローの自動化を実際に経験します。 サーバーレス コンピューティングでノートブックを実行するようにジョブ タスクを構成し、ジョブとパイプラインのインターフェイスでジョブの実行を監視する方法を学び、運用ワークロードのトリガーを使って定期的なジョブ実行をスケジュールする方法を理解します。
+  duration: 40 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks Lakeflow ジョブを使用してワークロードをデプロイする

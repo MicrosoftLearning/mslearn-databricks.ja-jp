@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks の Delta Live Tables を使用したエンド ツー エンドストリーミング パイプライン
+  description: IoT デバイス データの継続的なデータ インジェストと変換を調整するためのエンド ツー エンドのストリーミング パイプラインを Delta Live Tables を使って構築する実践経験を得ます。 宣言型変換を使って Delta Live Tables パイプラインを作成する方法、ストリーミング ソースとシンクの両方として Delta テーブルを使う方法、リアルタイム ストリーミングの結果を視覚化してパイプラインを通過するデータ フローを監視する方法を学びます。
+  duration: 30 minutes
+  level: 400
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks の Delta Live Tables を使用したエンド ツー エンドストリーミング パイプライン

@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks で Delta Lake を使用する
+  description: ACID トランザクションをサポートする Delta テーブルを作成し、DeltaTable API を使って更新を実行し、トランザクション履歴を調べてタイムトラベル機能により以前のバージョンのデータにアクセスすることで、Delta Lake の操作を実践的に経験します。 OPTIMIZE コマンドを使って Delta テーブル ストレージとパフォーマンスを最適化し、VACUUM コマンドを使って物理レイアウトを再構成して古いデータ ファイル バージョンをクリーンアップする方法を学びます。
+  duration: 30 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks で Delta Lake を使用する

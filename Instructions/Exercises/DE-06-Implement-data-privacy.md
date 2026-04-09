@@ -1,170 +1,181 @@
 ---
 lab:
-  title: Azure Databricks で Unity Catalog を使用してデータ プライバシーとガバナンスを実装する
+  title: Azure Databricks の Unity Catalog について調べる
+  description: Azure Data Lake Storage Gen2 とアクセス コネクタを介したマネージド ID アクセスを使って、外部メタストア ストレージを構成することにより、Unity Catalog での一元的なデータ ガバナンスの実装を実践的に経験します。 きめ細かなアクセス許可管理を使ってカタログ、スキーマ、テーブルを作成してデータ アクセスを制御する方法、およびクエリと変換が監査とガバナンスのためにソース データにどのように接続するかをデータ系列の追跡を使って理解する方法を学びます。
+  duration: 45 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
-# Azure Databricks で Unity Catalog を使用してデータ プライバシーとガバナンスを実装する
+# Azure Databricks の Unity Catalog について調べる
 
-Unity Catalog は、データ アクセスの管理や監査を行う一元的な場所を提供してセキュリティを簡素化することによって、データと AI の一元的なガバナンス ソリューションを実現します。 機密情報の保護に不可欠な、詳細なアクセス制御リスト (ACL) と動的データ マスキングをサポートしています。 
+Unity Catalog は、データ アクセスの管理や監査を行う一元的な場所を提供してセキュリティを簡素化することによって、データと AI の一元的なガバナンス ソリューションを実現します。 この演習では、Azure Databricks ワークスペースの Unity Catalog を構成し、それを使用してデータを管理します。
 
-このラボは完了するまで、約 **30** 分かかります。
+> **注**: 場合によっては、Unity Catalog がワークスペースですでに有効になっている可能性があります。 この演習の手順に従って、カタログに新しいストレージ アカウントを割り当てることができます。
+
+このラボは完了するまで、約 **45** 分かかります。
 
 > **注**: Azure Databricks ユーザー インターフェイスは継続的な改善の対象となります。 この演習の手順が記述されてから、ユーザー インターフェイスが変更されている場合があります。
 
 ## 開始する前に
 
-管理レベルのアクセス権を持つ [Azure サブスクリプション](https://azure.microsoft.com/free)が必要です。
+<u>グローバル管理者</u>のアクセス権を持つ [Azure サブスクリプション](https://azure.microsoft.com/free)が必要です。
 
-## Azure Databricks ワークスペースをプロビジョニングする
+> **重要**: この演習では、Azure サブスクリプションで*グローバル管理者*のアクセス権があることを前提としています。 このレベルのアクセス権は、Azure Databricks ワークスペースで Unity Catalog を有効にするために Databricks アカウントを管理する際に必要です。
 
-> **ヒント**: 既に Azure Databricks ワークスペースがある場合は、この手順をスキップして、既存のワークスペースを使用できます。
+## Azure Databricks ワークスペースを作成する
 
-この演習には、新しい Azure Databricks ワークスペースをプロビジョニングするスクリプトが含まれています。 このスクリプトは、この演習で必要なコンピューティング コアに対する十分なクォータが Azure サブスクリプションにあるリージョンに、*Premium* レベルの Azure Databricks ワークスペース リソースを作成しようとします。また、使用するユーザー アカウントのサブスクリプションに、Azure Databricks ワークスペース リソースを作成するための十分なアクセス許可があることを前提としています。 十分なクォータやアクセス許可がないためにスクリプトが失敗した場合は、[Azure portal で、Azure Databricks ワークスペースを対話形式で作成](https://learn.microsoft.com/azure/databricks/getting-started/#--create-an-azure-databricks-workspace)してみてください。
+> **ヒント**: Premium レベルの Azure Databricks ワークスペースが既にある場合は、この手順をスキップして、既存のワークスペースを使用できます。
 
-1. Web ブラウザーで、`https://portal.azure.com` の [Azure portal](https://portal.azure.com) にサインインします。
-2. ページ上部の検索バーの右側にある **[\>_]** ボタンを使用して、Azure portal に新しい Cloud Shell を作成します。***PowerShell*** 環境を選択します。 次に示すように、Azure portal の下部にあるペインに、Cloud Shell のコマンド ライン インターフェイスが表示されます。
+1. **Azure portal** (`https://portal.azure.com`) にサインインします。
+2. 次の設定で **Azure Databricks** リソースを作成します。
+    - **[サブスクリプション]**: *Azure サブスクリプションを選択します*
+    - **リソース グループ**: *`msl-xxxxxxx` という名前の新しいリソース グループを作成します ("xxxxxxx" は一意の値です)*
+    - **ワークスペース名**: `databricks-xxxxxxx`*("xxxxxxx" はリソース グループ名で使用される値です)*
+    - **リージョン**: *使用可能なリージョンを選択します*
+    - **価格レベル**: *Premium* または*試用版*
+    - **管理対象リソース グループ名**: `databricks-xxxxxxx-managed`*("xxxxxxx" はリソース グループ名で使用される値です)*
 
-    ![Azure portal と Cloud Shell のペイン](./images/cloud-shell.png)
+    ![Azure portal の [Azure Databricks ワークスペースを作成する] ページのスクリーンショット](./images/create-databricks.png)
 
-    > **注**: *Bash* 環境を使用するクラウド シェルを以前に作成した場合は、それを ***PowerShell*** に切り替えます。
+3. **[確認および作成]** を選択し、デプロイが完了するまで待ちます。
 
-3. ペインの上部にある区分線をドラッグして Cloud Shell のサイズを変更したり、ペインの右上にある **&#8212;** 、 **&#10530;** 、**X** アイコンを使用して、ペインを最小化または最大化したり、閉じたりすることができます。 Azure Cloud Shell の使い方について詳しくは、[Azure Cloud Shell のドキュメント](https://docs.microsoft.com/azure/cloud-shell/overview)をご覧ください。
+## カタログ向けのストレージを準備する
 
-4. PowerShell のペインで、次のコマンドを入力して、リポジトリを複製します。
+Azure Databricks で Unity Catalog を使用する場合、データは外部ストアに格納され、複数のワークスペース間で共有できます。 Azure では、この目的で Azure Data Lake Storage Gen2 階層型名前空間をサポートする Azure Storage アカウントを使用するのが一般的です。
 
-     ```powershell
-    rm -r mslearn-databricks -f
-    git clone https://github.com/MicrosoftLearning/mslearn-databricks
-     ```
-
-5. リポジトリをクローンした後、次のコマンドを入力して **setup.ps1** スクリプトを実行します。これにより、使用可能なリージョンに Azure Databricks ワークスペースがプロビジョニングされます。
-
-     ```powershell
-    ./mslearn-databricks/setup.ps1
-     ```
-
-6. メッセージが表示された場合は、使用するサブスクリプションを選択します (これは、複数の Azure サブスクリプションへのアクセス権を持っている場合にのみ行います)。
-
-7. スクリプトの完了まで待ちます。通常、約 5 分かかりますが、さらに時間がかかる場合もあります。 待っている間に、Azure Databricks ドキュメントの記事「[Unity Catalog を使用したデータ ガバナンス](https://learn.microsoft.com/azure/databricks/data-governance/)」を確認してください。
-
-## クラスターの作成
-
-Azure Databricks は、Apache Spark "クラスター" を使用して複数のノードでデータを並列に処理する分散処理プラットフォームです。** 各クラスターは、作業を調整するドライバー ノードと、処理タスクを実行するワーカー ノードで構成されています。 この演習では、ラボ環境で使用されるコンピューティング リソース (リソースが制約される場合がある) を最小限に抑えるために、*単一ノード* クラスターを作成します。 運用環境では、通常、複数のワーカー ノードを含むクラスターを作成します。
-
-> **ヒント**: Azure Databricks ワークスペースに 13.3 LTS 以降のランタイム バージョンを持つクラスターが既にある場合は、それを使ってこの演習を完了し、この手順をスキップできます。
-
-1. Azure portal で、スクリプトによって作成された **msl-*xxxxxxx*** リソース グループ (または既存の Azure Databricks ワークスペースを含むリソース グループ) に移動します
-
-1. Azure Databricks Service リソース (セットアップ スクリプトを使って作成した場合は、**databricks-*xxxxxxx*** という名前) を選択します。
-
-1. Azure Databricks ワークスペースの [**概要**] ページで、[**ワークスペースの起動**] ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。サインインを求められた場合はサインインします。
-
-    > **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
-
-1. 左側のサイドバーで、**[(+) 新規]** タスクを選択し、**[クラスター]** を選択します (**[その他]** サブメニューを確認する必要がある場合があります)。
-
-1. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
-    - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
-    - **ポリシー**:Unrestricted
-    - **クラスター モード**: 単一ノード
-    - **アクセス モード**: 単一ユーザー (*自分のユーザー アカウントを選択*)
-    - **Databricks Runtime のバージョン**: 13.3 LTS (Spark 3.4.1、Scala 2.12) 以降
-    - **Photon Acceleration を使用する**: 選択済み
-    - **ノード タイプ**: Standard_D4ds_v5
-    - **非アクティブ状態が ** *20* ** 分間続いた後終了する**
-
-1. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
-
-    > **注**: クラスターの起動に失敗した場合、Azure Databricks ワークスペースがプロビジョニングされているリージョンでサブスクリプションのクォータが不足していることがあります。 詳細については、「[CPU コアの制限によってクラスターを作成できない](https://docs.microsoft.com/azure/databricks/kb/clusters/azure-core-limit)」を参照してください。 その場合は、ワークスペースを削除し、別のリージョンに新しいワークスペースを作成してみてください。 次のように、セットアップ スクリプトのパラメーターとしてリージョンを指定できます: `./mslearn-databricks/setup.ps1 eastus`
-
-## Unity Catalog を設定する
-
-Unity Catalog メタストアには、セキュリティ保護可能なオブジェクト (テーブル、ボリューム、外部の場所、共有など) とそのオブジェクトへのアクセスを制御するアクセス許可に関するメタデータが登録されます。 各メタストアでは、データを整理できる 3 レベルの名前空間 (`catalog`.`schema`.`table`) が公開されます。 組織が活動しているリージョンごとに、1 つのメタストアが存在する必要があります。 Unity Catalog を操作するには、ユーザーが自分のリージョンのメタストアに接続されているワークスペース上に存在する必要があります。
-
-1. サイドバーで、**カタログ**を選択します。
-
-2. カタログ エクスプローラーには、ワークスペース名を持つ既定の Unity Catalog (**databricks-*xxxxxxx*** (セットアップ スクリプトを使用して作成した場合) が存在する必要があります。 カタログを選択し、右側のウィンドウの上部にある **スキーマの作成**を選択します。
-
-3. 新しいスキーマを **e コマース**と名付け、ワークスペースと共に作成したストレージ ロケーションを選択し、**[作成]** を選びます。
-
-4. カタログを選択し、右側のウィンドウで **[ワークスペース]** タブを選択します。ワークスペースがそれに `Read & Write`アクセスできることを確認します。
-
-## Azure Databricks にサンプル データを取り込む
-
-1. 次のサンプル データ ファイルのダウンロード。
-   * [customers.csv](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/DE-05/customers.csv)
-   * [products.csv](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/DE-05/products.csv)
-   * [sales.csv](https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/DE-05/sales.csv)
-
-2. Azure Databricks ワークスペースのカタログ エクスプローラーの上部で**+** を選択し、その後 **[データの追加]** を選択します。
-
-3. 新しいウィンドウで、**[ファイルをボリュームにアップロード]** を選択します。
-
-4. 新しいウィンドウで、`ecommerce`スキーマに移動し、それを展開して **[ボリュームの作成]** を選択します。
-
-5. 新しいボリュームに **sample_data** と名前を付け、 **[作成]** を選択します。
-
-6. 新しいボリュームを選択し、ファイル `customers.csv`、`products.csv`、`sales.csv` をアップロードします。 **[アップロード]** を選択します。
-
-7. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 **[接続]** ドロップダウン リストで、まだ選択されていない場合はクラスターを選択します。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
-
-8. ノートブックの最初のセルに、次のコードを入力し、CSV ファイルからテーブルを作成します。
-
-     ```python
-    # Load Customer Data
-    customers_df = spark.read.format("csv").option("header", "true").load("/Volumes/databricksxxxxxxx/ecommerce/sample_data/customers.csv")
-    customers_df.write.saveAsTable("ecommerce.customers")
-
-    # Load Sales Data
-    sales_df = spark.read.format("csv").option("header", "true").load("/Volumes/databricksxxxxxxx/ecommerce/sample_data/sales.csv")
-    sales_df.write.saveAsTable("ecommerce.sales")
-
-    # Load Product Data
-    products_df = spark.read.format("csv").option("header", "true").load("/Volumes/databricksxxxxxxx/ecommerce/sample_data/products.csv")
-    products_df.write.saveAsTable("ecommerce.products")
-     ```
-
->**注:** `.load` ファイル パスで、`databricksxxxxxxx` をカタログ名に置き換えます。
-
-9. カタログ エクスプローラーで、`ecommerce` スキーマに移動し、その中に新しいテーブルが含まれていることを確認します。
+1. Azure portal で、次の設定を使用して新しい**ストレージ アカウント**を作成します。
+    - **[基本]** :
+        - **[サブスクリプション]**: *Azure サブスクリプションを選択します*
+        - **リソース グループ**: *Azure Databricks ワークスペースを作成した既存の **msl-xxxxxxx** リソース グループを選択します。*
+        - **ストレージ アカウント名**: `storexxxxxxx`*("xxxxxxx" はリソース グループ名で使用される値です)*
+        - **リージョン**: *<u>Azure Databricks ワークスペースを作成したリージョン</u>を選択します*
+        - **プライマリ サービス**: Azure Blob Storage または Azure Data Lake Storage Gen 2
+        - **パフォーマンス**: 標準
+        - **冗長**: ローカル冗長ストレージ (LRS) *(この演習のような非運用ソリューションの場合、このオプションのコストと容量消費の利点は低くなります)*
+    - **詳細**:
+        - **階層型名前空間を有効にする**: *選択されています*
     
-## ACL と動的データ マスキングを設定する
+    ![Azure potal の [ストレージ アカウントの作成] の詳細設定ページのスクリーンショット。](./images/create-storage.png)
 
-アクセス制御リスト (ACL) は、Azure Databricks のデータ セキュリティの基本的な側面であり、さまざまなワークスペース オブジェクトのアクセス許可を構成できます。 Unity Catalog を使用すると、データ アクセスのガバナンスと監査を一元化し、データと AI 資産の管理に不可欠な詳細なセキュリティ モデルを提供できます。 
+1. **[確認および作成]** を選択し、デプロイが完了するまで待ちます。
+1. デプロイが完了したら、デプロイされた *storexxxxxxx* ストレージ アカウント リソースに移動し、**ストレージ ブラウザー** ページを使用して、`data` という名前の新しい BLOB コンテナーを追加します。 ここに、Unity Catalog オブジェクトのデータが格納されます。
 
-1. 新しいセルで次のコードを実行して、`customers` テーブルのセキュリティで保護されたビューを作成し、PII (個人を特定できる情報) データへのアクセスを制限します。
+    ![Azure portal の [ストレージ ブラウザー] ページの [コンテナーを作成する] ペインのスクリーンショット。](./images/create-container.png)
 
-     ```sql
-    CREATE VIEW ecommerce.customers_secure_view AS
-    SELECT 
-        customer_id, 
-        name, 
-        address,
-        city,
-        state,
-        zip_code,
-        country, 
-        CASE 
-            WHEN current_user() = 'admin_user@example.com' THEN email
-            ELSE NULL 
-        END AS email, 
-        CASE 
-            WHEN current_user() = 'admin_user@example.com' THEN phone 
-            ELSE NULL 
-        END AS phone
-    FROM ecommerce.customers;
-     ```
+## カタログ ストレージへのアクセスを構成する
 
-2. セキュリティで保護されたビューに対してクエリを実行します。
+Unity Catalog 用に作成した BLOB コンテナーにアクセスするには、Azure Databricks ワークスペースでマネージド アカウントを使用して、*アクセス コネクタ*経由でストレージ アカウントに接続する必要があります。
 
-     ```sql
-    SELECT * FROM ecommerce.customers_secure_view
-     ```
+1. Azure portal で、次の設定を使用して新しい **Azure Databricks のアクセス コネクタ**リソースを作成します。
+    - **[サブスクリプション]**: *Azure サブスクリプションを選択します*
+    - **リソース グループ**: *Azure Databricks ワークスペースを作成した既存の **msl-xxxxxxx** リソース グループを選択します。*
+    - **名前**: `connector-xxxxxxx`*("xxxxxxx" はリソース グループ名で使用される値です)*
+    - **リージョン**: *<u>Azure Databricks ワークスペースを作成したリージョン</u>を選択します*
 
-`admin_user@example.com` としてデータにアクセスしていないため、PII 列 (メールと電話) へのアクセスが制限されていることを確認します。
+    ![Azure portal の [Azure Databricks のアクセス コネクタを作成する] ページのスクリーンショット。](./images/create-connector.png)
+
+1. **[確認および作成]** を選択し、デプロイが完了するまで待ちます。 次に、デプロイされたリソースに移動し、**概要**ページで、**リソース ID** を書き留めます。これは、*/subscriptions/abc-123.../resourceGroups/msl-xxxxxxx/providers/Microsoft.Databricks/accessConnectors/connector-xxxxxxx* の形式にする必要があります。
+1. Azure portal で、*storexxxxxxx* ストレージ アカウント リソースに戻り、**[Access Control (IAM)]** ページで新しいロールの割り当てを追加します。
+1. **[職務のロール]** 一覧で、`Storage blob data contributor` ロールを検索して選択します。
+
+    ![Azure portal の [ロールの割り当てを追加] ページのスクリーンショット。](./images/role-assignment-search.png)
+
+1. [**次へ**] を選択します。 次に、**[メンバー]** ページで、**マネージド ID** にアクセスを割り当てるオプションを選択し、先に作成した Azure Databricks の `connector-xxxxxxx` アクセス コネクタを見つけて選択します (サブスクリプションで作成された他のアクセス コネクタは無視します)。
+
+    ![Azure portal の [マネージド ID の選択] ペインのスクリーンショット。](./images/managed-identity.png)
+
+1. ロール メンバーシップを確認して割り当てて、Azure Databricks の *connector-xxxxxxx* アクセス コネクタのマネージド ID を、*storexxxxxxx* ストレージ アカウントのストレージ BLOB データ共同作成者ロールに追加します。これにより、ストレージ アカウント内のデータにアクセスできるようになります。
+
+## Unity Catalog の構成
+
+カタログ用の BLOB Storage コンテナーを作成し、Azure Databricks マネージド ID がアクセスする方法を提供できたので、ストレージ アカウントに基づいてメタストアを使用するように Unity Catalog を構成できます。
+
+1. Azure portal で、**msl-*xxxxxxx*** リソース グループを表示します。これで、次の 3 つのリソースが含まれるようになります。
+    - **databricks-*xxxxxxx*** Azure Databricks ワークスペース
+    - **store*xxxxxxx*** ストレージ アカウント
+    - **connector-*xxxxxxx*** Azure Databricks 用のアクセス コネクタ
+
+1. 前に作成した **databricks-xxxxxxx** Azure Databricks ワークスペース リソースを開き、**[概要]** ページで、**[ワークスペースの起動]** ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。求められた場合はサインインします。
+1. 右上にある **databricks-*xxxxxxx*** メニューで、**[アカウントの管理]** を選択し、別のタブで Azure Databricks アカウント コンソールを開きます。
+
+    ![Azure Databricks ワークスペースの [アカウントの管理] メニュー項目のスクリーンショット。](./images/manage-account-menu.png)
+
+    > **注**: ***[アカウントの管理]*** が一覧にない場合、または正常に開かない場合は、グローバル管理者に Azure Databricks ワークスペースの ***アカウント管理者***ロールにアカウントを追加してもらう必要があります。
+    >
+    > 個人用の Microsoft アカウント (oultook.com アカウントなど) を使用して作成した個人用 Azure サブスクリプションを使用している場合は、Azure ディレクトリに「外部」の Entra ID アカウントが自動的に作成されている可能性があり、そのアカウント名を使用してサインインする必要がある場合があります。
+    >
+    > ヘルプが必要な場合は、***[この Q & A のスレッド](https://learn.microsoft.com/answers/questions/2133569/not-able-to-access-databricks-manage-account-conso)*** を参照してください。
+
+1. Azure Databricks アカウント コンソールの、**[カタログ]** ページで、**[メタストアの作成]** を選択します。
+1. 次の設定を使用して新しいメタストアを作成します。
+    - **名前**: `metastore-xxxxxxx`*(xxxxxxx は、この演習でリソースに使用してきた一意の値です)*
+    - **リージョン**: *Azure リソースを作成したリージョンを選択します*
+    - **ADLS Gen 2 パス**: `data@storexxxxxxx.dfs.core.windows.net/`*(storexxxxxx はストレージ アカウント名です)*
+    - **Access Connector ID**: *アクセス コネクタのリソース ID (Azure portal の [概要] ページからコピー)*
+
+    ![Azure Databricks アカウント コンソールの [メタストアの作成] ページのスクリーンショット。](./images/create-metastore.png)
+
+1. メタストアを作成したら、**databricks-*xxxxxxx*** ワークスペースを選択し、メタストアを割り当てます。
+
+    ![Azure Databricks アカウント コンソールの [メタストアの作成] ページのスクリーンショット。](./images/assign-metastore.png)
+
+## Unity Catalog でデータを操作する
+
+永続的なメタストアを割り当てて Unity Catalog を有効にしたので、それを使用して Azure Databricks のデータを操作できます。
+
+### テーブルを作成して読み込む
+
+1. Azure Databricks アカウント コンソールのブラウザー タブを閉じ、Azure Databricks ワークスペースのタブに戻ります。 その後、<u>ブラウザーを更新</u>します。
+1. **カタログ** ページで、組織の **メイン** カタログを選択し、**default** および **Information_schema** という名前のスキーマが既にカタログに作成されていることを確認します。
+
+    ![Azure Databricks ワークスペースのメイン カタログのスクリーンショット。](./images/main-catalog.png)
+
+1. **[スキーマの作成]** を選択し、`sales` という名前の新しいスキーマを作成します (カタログの既定のメタストアが使用されるように、保存場所は指定しないでおきます)。
+1. [**products.csv**](https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/products.csv) ファイルを `https://raw.githubusercontent.com/MicrosoftLearning/mslearn-databricks/main/data/products.csv` からローカル コンピューターにダウンロードし、**products.csv** として保存します。
+1. Azure Databricks ワークスペースのカタログ エクスプローラーで、**sales** スキーマが選択されている状態で、**[作成]** > **[テーブルの作成]** の順に選択します。 次に、ダウンロードした **products.csv** ファイルをアップロードして、**sales** スキーマに **products** という名前の新しいテーブルを作成します。
+
+    > **注**: サーバーレス コンピューティングが開始されるまで数分かかる場合があります。
+
+    ![Azure Databricks ワークスペースのテーブルの作成インターフェイスのスクリーンショット。](./images/create-table.png)
+
+1.  テーブルを作成します。 AI によって生成された説明が推奨される場合は、それを受け入れます。
+
+### アクセス許可の管理
+
+1. **products** テーブルを選択した状態で、**[アクセス許可]** タブで、新しいテーブルに対するアクセス許可が既定で割り当てられていないことを確認します (完全な管理者権限を持っているのでアクセスできますが、他のユーザーはテーブルでクエリを実行できません)。
+1. **[許可]** を選択し、次のようにテーブルへのアクセスを構成します。
+    - **プリンシパル**: すべてのアカウント ユーザー
+    - **特権**: 選択
+    - **アクセスに必要な追加の特権**: main.sales に USE SCHEMA も付与します
+
+    ![Azure Databricks ワークスペースのアクセス許可の付与インターフェイスのスクリーンショット。](./images/grant-permissions.png)
+
+### 系列をトラッキングする
+
+1. **[+ 新規]** メニューで **[クエリ]** を選択し、次の SQL コードを使用して新しいクエリを作成します。
+
+    ```sql
+    SELECT Category, COUNT(*) AS Number_of_Products
+    FROM main.sales.products
+    GROUP BY Category; 
+    ```
+
+1. サーバーレス コンピューティングが接続されていることを確認し、クエリを実行して結果を確認します。
+
+    ![Azure Databricks ワークスペースのクエリ インターフェイスのスクリーンショット。](./images/query-results.png)
+
+1. クエリを `Products by Category` として、Azure Databricks ユーザー アカウントのワークスペース フォルダーに保存します。
+1. **[カタログ]** ページに戻ります。 次に、**main** カタログと **sales** スキーマを展開し、**products** テーブルを選択します。
+1. **[系列]** タブで **[クエリ]** を選択して、作成したクエリからソース テーブルへの系列が Unity Catalog によって追跡されていることを確認します。
+
+    ![Azure Databricks ワークスペースのテーブル の系列ビューのスクリーンショット。](./images/table-lineage.png)
 
 ## クリーンアップ
 
-Azure Databricks ポータルの **[コンピューティング]** ページでクラスターを選択し、**[&#9632; 終了]** を選択してクラスターをシャットダウンします。
+この演習では、Azure Databricks ワークスペースの Unity Catalog を有効にして構成し、それを使用してメタストア内のデータを操作しました。 Azure Databricks の Unity Catalog でできることについて詳しくは、「[ Unity Catalog を使用したデータ ガバナンス](https://learn.microsoft.com/azure/databricks/data-governance/)」を参照してください。
 
 Azure Databricks を調べ終わったら、作成したリソースを削除できます。これにより、不要な Azure コストが生じないようになり、サブスクリプションの容量も解放されます。

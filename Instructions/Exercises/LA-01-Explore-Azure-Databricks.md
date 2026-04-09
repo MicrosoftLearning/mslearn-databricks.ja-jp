@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks を探索する
+  description: アップロードされた CSV ファイルからテーブルを作成し、SQL と PySpark のコードをノートブックで記述してデータのクエリと変換を行い、クエリ結果から視覚エフェクトを作成することにより、Azure Databricks のコア機能を実践的に経験します。 ノートブック内で直接自然言語の支援とエラー診断を提供することでコードの記述、デバッグ、修正に役立つ AI 搭載ツールである Databricks アシスタントを使う方法を学びます。
+  duration: 30 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks を探索する

@@ -1,6 +1,13 @@
 ---
 lab:
   title: Azure Databricks で SQL ウェアハウスを使用する
+  description: 標準 SQL コマンドと CSV ファイルのアップロードを使ってカスタム データベース スキーマとテーブルを作成することで、データ レイク ファイルでリレーショナル データベース操作を実行するための、SQL ウェアハウスの使用を実際に経験します。 データ探索とレポート作成のために公開してビジネス ユーザーと共有できる対話型ダッシュボードを SQL クエリと棒グラフ視覚エフェクトを使って構築する方法を学びます。
+  duration: 30 minutes
+  level: 300
+  islab: true
+  primarytopics:
+    - Azure Databricks
+    - Azure Portal
 ---
 
 # Azure Databricks で SQL ウェアハウスを使用する
