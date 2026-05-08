@@ -1,7 +1,7 @@
 ---
 lab:
-  title: Azure Databricks と Azure OpenAI を使用して大規模言語モデルを微調整する
-  description: トークン数の検証、微調整ジョブの送信、進行状況の監視など、Azure Databricks と Azure OpenAI を使ってカスタム データセットで GPT-4o モデルを微調整する経験を得ます。 カスタマイズした微調整済みモデルをデプロイし、基本モデルでは提供されない専門知識を必要とするドメイン固有タスクに対してチャット入力候補 API でそれを使う方法を学びます。
+  title: Azure Databricks と Microsoft Foundry を使用して大規模言語モデルを微調整する
+  description: トークン数の検証、微調整ジョブの送信、進行状況の監視など、Azure Databricks と Microsoft Foundry を使ってカスタム データセットで GPT-4.1 モデルを微調整する実践的な経験を得ます。 カスタマイズした微調整済みモデルをデプロイし、基本モデルでは提供されない専門知識を必要とするドメイン固有タスクに対してチャット入力候補 API でそれを使う方法を学びます。
   duration: 60 minutes
   level: 400
   islab: true
@@ -11,9 +11,9 @@ lab:
     - Microsoft Foundry
 ---
 
-# Azure Databricks と Azure OpenAI を使用して大規模言語モデルを微調整する
+# Azure Databricks と Microsoft Foundry を使用して大規模言語モデルを微調整する
 
-Azure Databricks を使用すると、ユーザーは独自のデータを使用して微調整することで、LLM の利点を特殊なタスクに活用できるようになり、ドメイン固有のパフォーマンスが向上します。 Azure Databricks を使用して言語モデルを微調整するために、モデルの完全な微調整のプロセスを簡略化する Mosaic AI モデル トレーニングのインターフェイスを利用できます。 この機能を使用すると、カスタム データを使用してモデルを微調整し、チェックポイントを MLflow に保存して、微調整したモデルを完全に制御できます。
+Azure Databricks と Microsoft Foundry を使用すると、独自のデータで大規模言語モデルを微調整して、ドメイン固有のパフォーマンスを向上させることができます。 このラボでは、Azure Databricks は、データの準備、Microsoft Foundry の微調整 API の呼び出し、結果のモデルのテストを行う開発環境として機能します。 微調整を行うと、比較的小さな精選されたデータセットを使用して、事前トレーニング済みの基本モデルを特殊なタスクに適応できます。
 
 このラボは完了するまで、約 **60** 分かかります。
 
@@ -23,46 +23,53 @@ Azure Databricks を使用すると、ユーザーは独自のデータを使用
 
 管理レベルのアクセス権を持つ [Azure サブスクリプション](https://azure.microsoft.com/free)が必要です。
 
-## Azure OpenAI リソースをプロビジョニングする
+## Microsoft Foundry リソースとプロジェクトを作成する
 
-まだ持っていない場合は、Azure サブスクリプションで Azure OpenAI リソースをプロビジョニングします。
+まだ持っていない場合は、Azure サブスクリプションで Microsoft Foundry リソースとプロジェクトを作成します。
+
+> **注**: Foundry リソースを作成するために必要なものは、サブスクリプション、リソース グループ、リージョン、名前のみです。 Key Vault または Application Insights リソースは必要ありません。
 
 1. **Azure portal** (`https://portal.azure.com`) にサインインします。
-2. 次の設定で **Azure OpenAI** リソースを作成します。
-    - **[サブスクリプション]**: "Azure OpenAI Service へのアクセスが承認されている Azure サブスクリプションを選びます"**
+2. 次のリンクを使用して Foundry リソースの作成ページを開きます: `https://portal.azure.com/#create/Microsoft.CognitiveServicesAIFoundry`
+3. **[作成]** ページの **[基本]** タブで、次の情報を指定します。
+    - **[サブスクリプション]**: *Azure サブスクリプションを選択します*
     - **[リソース グループ]**: *リソース グループを作成または選択します*
     - **[リージョン]**: *以下のいずれかのリージョンから**ランダム**に選択する*\*
-        - 米国東部 2
         - 米国中北部
         - スウェーデン中部
-        - スイス西部
     - **[名前]**: "*希望する一意の名前*"
-    - **価格レベル**: Standard S0
+4. **[確認と作成]**、**[作成]** の順に選択し、デプロイが完了するまで待ちます。
 
-> \* Azure OpenAI リソースは、リージョンのクォータによって制限されます。 一覧表示されているリージョンには、この演習で使用されるモデル タイプの既定のクォータが含まれています。 リージョンをランダムに選択することで、サブスクリプションを他のユーザーと共有しているシナリオで、1 つのリージョンがクォータ制限に達するリスクが軽減されます。 演習の後半でクォータ制限に達した場合は、別のリージョンに別のリソースを作成する必要が生じる可能性があります。
+> \* Foundry リソースは、リージョンのクォータによって制限されます。 一覧表示されているリージョンには、この演習で使用されるモデル タイプの既定のクォータが含まれています。 リージョンをランダムに選択することで、サブスクリプションを他のユーザーと共有しているシナリオで、1 つのリージョンがクォータ制限に達するリスクが軽減されます。 演習の後半でクォータ制限に達した場合は、別のリージョンに別のリソースを作成する必要が生じる可能性があります。
 
-3. デプロイが完了するまで待ちます。 次に、Azure portal でデプロイされた Azure OpenAI リソースに移動します。
+5. デプロイが完了したら、デプロイされたリソースに移動します。 左側のペインの **[リソース管理]** で **[キーとエンドポイント]** を選択し、**[エンドポイント]** をコピーします。これはこの演習で後ほど使用します。
 
-4. 左側のペインで、**[リソース管理]** の下の **[キーとエンドポイント]** を選択します。
+6. **[概要]** ページで、**[Microsoft Foundry に移動]** を選択してリソースを Foundry ポータルで開きます (または、`https://ai.azure.com` に直接移動します)。
 
-5. エンドポイントと使用可能なキーの 1 つをコピーしておきます。この演習で、後でこれを使用します。
+7. **Microsoft Foundry** で、Foundry リソース内に新しい**プロジェクト**を作成します。
+    - 左上隅にあるプロジェクト名を選択して **[新しいプロジェクトの作成]** を選択します。
+    - **プロジェクト名**を入力し、**[プロジェクトの作成]** を選択します。
+    - プロジェクトが作成されるまで待ちます。
 
-6. Cloud Shell を起動し、`az account get-access-token` を実行して API テスト用の一時的な認証トークンを取得します。 以前にコピーしたエンドポイントとキーと共に保持します。
+8. Cloud Shell を起動し、次の 2 つのコマンドを実行して API テスト用の一時的な認証トークンを取得します。 以前にコピーしたエンドポイントと共に保持します。
 
-    >**注**:コピーする必要があるのは `accessToken` フィールド値だけであり、JSON 出力全体では **ありません**。
+    ```bash
+    az account get-access-token --resource https://cognitiveservices.azure.com
+    az account get-access-token --resource https://management.azure.com
+    ```
+
+    >**注**: 最初のトークンは OpenAI/Cognitive Services API 呼び出しに使用されます。2 つ目は Azure 管理 API (モデル デプロイ) に使用されます。 コピーする必要があるのはそれぞれの `accessToken` フィールド値だけであり、JSON 出力全体では**ありません**。
 
 ## 必要なモデルをデプロイする
 
-Azure には、モデルのデプロイ、管理、調査に使用できる **Microsoft Foundry** という名前の Web ベース ポータルがあります。 Microsoft Foundry を使ってモデルをデプロイし、Azure OpenAI の調査を始めます。
+Microsoft Foundry を使用すると、モデルのデプロイ、管理、探索を行うことができます。 基本モデルをデプロイし、それを後で微調整します。
 
 > **注**: Microsoft Foundry を使う際、実行するタスクを提案するメッセージ ボックスが表示される場合があります。 これらを閉じて、この演習の手順に従うことができます。
 
-1. Azure portal の Azure OpenAI リソースの **[概要]** ページで、**[開始する]** セクションまで下にスクロールし、ボタンを選んで **[Microsoft Foundry]** に移動します。
-   
-1. Microsoft Foundry の左側のペインで、**[デプロイ]** ページを選んで既存のモデル デプロイを表示します。 まだない場合は、次の設定で **gpt-4o** モデルの新しいデプロイを作成します。
-    - **デプロイ名**: *gpt-4o*
+1. **Microsoft Foundry** の左側のペインで、**[モデル + エンドポイント]** ページを選択して既存のモデル デプロイを表示します。 まだない場合は、次の設定で **gpt-4.1** モデルの新しいデプロイを作成します。
+    - **デプロイ名**: *gpt-4.1*
     - **デプロイの種類**:Standard
-    - **モデル バージョン**: *既定のバージョンを使用する*
+    - **モデル バージョン**: *2025-04-14*
     - **1 分あたりのトークン数のレート制限**:10K\*
     - **コンテンツ フィルター**: 既定
     - **動的クォータを有効にする**: 無効
@@ -75,34 +82,48 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
 
 1. **Azure portal** (`https://portal.azure.com`) にサインインします。
 2. 次の設定で **Azure Databricks** リソースを作成します。
-    - **サブスクリプション**: *Azure OpenAI リソースの作成に使用したサブスクリプションと同じ Azure サブスクリプションを選択します*
-    - **リソース グループ**: *Azure OpenAI リソースを作成したリソース グループと同じです*
-    - **リージョン**: *Azure OpenAI リソースを作成したリージョンと同じです*
+    - **サブスクリプション**: Microsoft Foundry リソースの作成に使用したのと同じ Azure サブスクリプションを選択します**
+    - **リソース グループ**: Microsoft Foundry リソースを作成したリソース グループと同じです**
+    - **リージョン**: Microsoft Foundry リソースを作成したリージョンと同じです**
     - **[名前]**: "*希望する一意の名前*"
-    - **価格レベル**: *Premium* または*試用版*
+    - **価格レベル**: *Premium*
+    - **ワークスペースの種類**: *ハイブリッド*
+    - **マネージド リソース グループ**: 既定値のままにするか、一意の名前を入力します**
 
 3. **[確認および作成]** を選択し、デプロイが完了するまで待ちます。 次にリソースに移動し、ワークスペースを起動します。
 
-## 新しいノートブックの作成とデータの取り込み
+## クラスターの作成
+
+Azure Databricks は、Apache Spark "クラスター" を使用して複数のノードでデータを並列に処理する分散処理プラットフォームです。** 各クラスターは、作業を調整するドライバー ノードと、処理タスクを実行するワーカー ノードで構成されています。 この演習では、ラボ環境で使用されるコンピューティング リソース (リソースが制約される場合がある) を最小限に抑えるために、*単一ノード* クラスターを作成します。 運用環境では、通常、複数のワーカー ノードを含むクラスターを作成します。
+
+> **ヒント**: Azure Databricks ワークスペースに 17.3 LTS **<u>ML</u>** 以降のランタイム バージョンを備えたクラスターが既にある場合は、この手順をスキップし、そのクラスターを使用してこの演習を完了できます。
 
 1. Azure portal で、Azure Databricks ワークスペースが作成されたリソース グループを参照します。
+2. Azure Databricks サービス リソースを選択します。
+3. Azure Databricks ワークスペースの [**概要**] ページで、[**ワークスペースの起動**] ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。サインインを求められた場合はサインインします。
 
-1. Azure Databricks サービス リソースを選択します。
+> **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
 
-1. Azure Databricks ワークスペースの [**概要**] ページで、[**ワークスペースの起動**] ボタンを使用して、新しいブラウザー タブで Azure Databricks ワークスペースを開きます。サインインを求められた場合はサインインします。
+4. 左側のサイドバーで、**[(+) 新規]** タスクを選択し、**[クラスター]** を選択します。
+5. **[新しいクラスター]** ページで、次の設定を使用して新しいクラスターを作成します。
+    - **クラスター名**: "ユーザー名の" クラスター (既定のクラスター名)**
+    - **ポリシー**:Unrestricted
+    - **機械学習**: 有効
+    - **Databricks Runtime**: 17.3 LTS
+    - **Photon Acceleration を使用する**: <u>オフ</u>にする
+    - **ワーカー タイプ**:Standard_D4ds_v5
+    - **シングル ノード**:オン
+    - **終了までの時間**: 30 分間の非アクティブ状態
 
-    > **ヒント**: Databricks ワークスペース ポータルを使用すると、さまざまなヒントと通知が表示される場合があります。 これらは無視し、指示に従ってこの演習のタスクを完了してください。
+6. クラスターが作成されるまで待ちます。 これには 1、2 分かかることがあります。
 
-1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 既定のコンピューティングとして **[サーバーレス]** を選択します。
+> **注**: クラスターの起動に失敗した場合、Azure Databricks ワークスペースがプロビジョニングされているリージョンでサブスクリプションのクォータが不足していることがあります。 詳細については、「[CPU コアの制限によってクラスターを作成できない](https://docs.microsoft.com/azure/databricks/kb/clusters/azure-core-limit)」を参照してください。 その場合は、ワークスペースを削除し、別のリージョンに新しいワークスペースを作成してみてください。
 
-1. 最初のコード セルに次のコードを入力して実行し、必要なライブラリをインストールします。
+## 新しいノートブックの作成とデータの取り込み
 
-    ```python
-    %pip install openai tiktoken numpy
-    dbutils.library.restartPython()
-    ```
+1. サイド バーで **[(+) 新規]** タスクを使用して、**Notebook** を作成します。 **[接続]** ドロップダウン リストで、まだ選択されていない場合はクラスターを選択します。 クラスターが実行されていない場合は、起動に 1 分ほどかかる場合があります。
 
-1. 新しいセルに次の SQL クエリを入力して、この演習のデータを既定のカタログに格納するために使用する新しいボリュームを作成します。
+1. ノートブックの最初のセルで、次の SQL クエリを入力して、この演習のデータを既定のカタログ内に格納するために使用する新しいボリュームを作成します。
 
     ```python
    %sql 
@@ -119,14 +140,14 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
    wget -O /Volumes/<catalog_name>/default/fine_tuning/validation_set.jsonl https://github.com/MicrosoftLearning/mslearn-databricks/raw/main/data/validation_set.jsonl
     ```
 
-3. 新しいセルで、この演習の冒頭でコピーしたアクセス情報を含む次のコードを実行して、Azure OpenAI リソースを使用するときに認証用の永続的な環境変数を割り当てます。
+3. 新しいセルで、この演習の冒頭でコピーしたアクセス情報を含む次のコードを実行して、Microsoft Foundry リソースを使用するときの認証用に永続的な環境変数を割り当てます。
 
     ```python
    import os
 
-   os.environ["AZURE_OPENAI_API_KEY"] = "your_openai_api_key"
-   os.environ["AZURE_OPENAI_ENDPOINT"] = "your_openai_endpoint"
-   os.environ["TEMP_AUTH_TOKEN"] = "your_access_token"
+   os.environ["AZURE_OPENAI_ENDPOINT"] = "your_foundry_endpoint"
+   os.environ["COGNITIVE_SERVICES_TOKEN"] = "your_cognitiveservices_access_token"  # from: az account get-access-token --resource https://cognitiveservices.azure.com
+   os.environ["MANAGEMENT_TOKEN"] = "your_management_access_token"                # from: az account get-access-token --resource https://management.azure.com
     ```
      
 ## トークン数を検証する
@@ -186,11 +207,13 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
        print('*' * 75)
     ```
 
-参考として、この演習で使用されるモデル GPT-4o では、コンテキスト制限 (入力プロンプトと生成された応答を合わせたトークンの合計数) は、128K トークンです。
+参考として、この演習で使用されるモデル GPT-4.1 のコンテキスト制限は 1,047,576 トークンです (ただし、標準デプロイは 300,000 トークンに制限されます)。
 
-## 微調整ファイルを Azure OpenAI にアップロードする
+## 微調整ファイルを Microsoft Foundry にアップロードする
 
 モデルの微調整を開始する前に、OpenAI クライアントを初期化し、その環境に微調整ファイルを追加して、ジョブの初期化に使用されるファイル ID を生成する必要があります。
+
+> **重要**: Azure Databricks でコードを実行する場合、`DefaultAzureCredential` は、サインインしているユーザー アカウントではなく、**Databricks ワークスペースのマネージド ID** として認証されます。 つまり、**Cognitive Services OpenAI 共同作成者**ロールを自分のアカウントに割り当てるだけでは不十分です。マネージド ID にもロールが必要です。または、ユーザー トークンを直接使用して認証する必要があります。 次のコードでは、先ほど Cloud Shell を使用して取得した `TEMP_AUTH_TOKEN` と共に `azure_ad_token` を使用します。これは独自の ID として実行され、この問題が回避されます。
 
 1. 新しいセルで次のコードを実行します。
 
@@ -200,8 +223,8 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
 
     client = AzureOpenAI(
       azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
-      api_key = os.getenv("AZURE_OPENAI_API_KEY"),
-      api_version = "2024-05-01-preview"  # This API version or later is required to access seed/events/checkpoint features
+      azure_ad_token = os.getenv("COGNITIVE_SERVICES_TOKEN"),
+      api_version = "2025-04-01-preview"  # This API version or later is required to access seed/events/checkpoint features
     )
 
     training_file_name = '/Volumes/<catalog_name>/default/fine_tuning/training_set.jsonl'
@@ -231,7 +254,7 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
    response = client.fine_tuning.jobs.create(
        training_file = training_file_id,
        validation_file = validation_file_id,
-       model = "gpt-4o",
+       model = "gpt-4.1-2025-04-14",
        seed = 105 # seed parameter controls reproducibility of the fine-tuning job. If no seed is specified one will be generated automatically.
    )
 
@@ -247,7 +270,7 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
    print("Status:", response.status)
     ```
 
->**注**:左側のサイドバーで **[微調整]** を選択して、AI Foundry のジョブの状態を監視することもできます。
+>**注**: 左側のサイド バーで **[微調整]** を選択しても、Microsoft Foundry のジョブの状態を監視できます。
 
 3. ジョブの状態が `succeeded` に変わったら、次のコードを実行して、最終的な結果を取得します。
 
@@ -268,11 +291,11 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
    import json
    import requests
 
-   token = os.getenv("TEMP_AUTH_TOKEN")
+   token = os.getenv("MANAGEMENT_TOKEN")
    subscription = "<YOUR_SUBSCRIPTION_ID>"
    resource_group = "<YOUR_RESOURCE_GROUP_NAME>"
-   resource_name = "<YOUR_AZURE_OPENAI_RESOURCE_NAME>"
-   model_deployment_name = "gpt-4o-ft"
+   resource_name = "<YOUR_AZURE_AI_SERVICES_RESOURCE_NAME>"  # The Azure AI Services resource name from your AI Foundry project settings
+   model_deployment_name = "gpt-4.1-ft"
 
    deploy_params = {'api-version': "2023-05-01"}
    deploy_headers = {'Authorization': 'Bearer {}'.format(token), 'Content-Type': 'application/json'}
@@ -282,8 +305,7 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
        "properties": {
            "model": {
                "format": "OpenAI",
-               "name": "<YOUR_FINE_TUNED_MODEL>",
-               "version": "1"
+               "name": fine_tuned_model
            }
        }
    }
@@ -308,16 +330,16 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
 
    client = AzureOpenAI(
      azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
-     api_key = os.getenv("AZURE_OPENAI_API_KEY"),
+     azure_ad_token = os.getenv("COGNITIVE_SERVICES_TOKEN"),
      api_version = "2024-02-01"
    )
 
    response = client.chat.completions.create(
-       model = "gpt-4o-ft", # model = "Custom deployment name you chose for your fine-tuning model"
+       model = "gpt-4.1-ft", # model = "Custom deployment name you chose for your fine-tuning model"
        messages = [
            {"role": "system", "content": "You are a helpful assistant."},
-           {"role": "user", "content": "Does Azure OpenAI support customer managed keys?"},
-           {"role": "assistant", "content": "Yes, customer managed keys are supported by Azure OpenAI."},
+           {"role": "user", "content": "Does Microsoft Foundry support customer managed keys?"},
+           {"role": "assistant", "content": "Yes, customer managed keys are supported by Microsoft Foundry."},
            {"role": "user", "content": "Do other Azure AI services support this too?"}
        ]
    )
@@ -327,7 +349,7 @@ Azure には、モデルのデプロイ、管理、調査に使用できる **Mi
  
 ## クリーンアップ
 
-Azure OpenAI リソースでの作業が完了したら、**Azure portal** (`https://portal.azure.com`) でデプロイまたはリソース全体を忘れずに削除します。
+完了したら、`https://ai.azure.com` で **Microsoft Foundry** 内のデプロイまたは Microsoft Foundry プロジェクト全体を必ず削除してください。
 
 Azure Databricks ポータルの **[コンピューティング]** ページでクラスターを選択し、**[&#9632; 終了]** を選択してクラスターをシャットダウンします。
 
